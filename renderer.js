@@ -50,6 +50,7 @@ const trackTitle = document.getElementById('track-title');
 const trackArtist = document.getElementById('track-artist');
 const trackArt = document.getElementById('track-art');
 const artPlaceholder = document.getElementById('art-placeholder');
+const eqBars = document.getElementById('eq-bars');
 const bgBlur = document.getElementById('bg-blur');
 const playerFavBtn = document.getElementById('player-fav-btn');
 
@@ -81,12 +82,23 @@ const ctxPlay = document.getElementById('ctx-play');
 const ctxFav = document.getElementById('ctx-fav');
 const ctxAddPlaylist = document.getElementById('ctx-add-playlist');
 const ctxPlaylistSubmenu = document.getElementById('ctx-playlist-submenu');
+const ctxRemovePlaylist = document.getElementById('ctx-remove-playlist');
 
 const deletePlaylistBtn = document.getElementById('delete-playlist-btn');
 const playlistViewName = document.getElementById('playlist-view-name');
 const playlistViewCount = document.getElementById('playlist-view-count');
 const playlistViewSongs = document.getElementById('playlist-view-songs');
 const playlistEmpty = document.getElementById('playlist-empty');
+const addSongsToPlaylistBtn = document.getElementById('add-songs-to-playlist-btn');
+
+// Song Picker Modal
+const songPickerModal = document.getElementById('song-picker-modal');
+const closeSongPickerBtn = document.getElementById('close-song-picker-btn');
+const cancelSongPickerBtn = document.getElementById('cancel-song-picker-btn');
+const confirmSongPickerBtn = document.getElementById('confirm-song-picker-btn');
+const songPickerSearch = document.getElementById('song-picker-search');
+const songPickerList = document.getElementById('song-picker-list');
+const songPickerSelectedCount = document.getElementById('song-picker-selected-count');
 
 const toast = document.getElementById('toast');
 
@@ -281,7 +293,7 @@ function renderSongRow(item, index, container, fromPlaylistId = null) {
     // Right-click for context menu
     li.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        showContextMenu(e, index);
+        showContextMenu(e, index, fromPlaylistId);
     });
 
     container.appendChild(li);
@@ -449,7 +461,115 @@ function addSongToPlaylist(playlistId, songPath) {
     if (activePlaylistId === playlistId && currentView === 'playlist') openPlaylistView(playlistId);
 }
 
-// Create playlist UI
+// ===================== SONG PICKER =====================
+let songPickerSelected = new Set();  // paths selected in the picker
+
+function openSongPicker() {
+    if (!activePlaylistId) return;
+    const pl = playlists.find(p => p.id === activePlaylistId);
+    if (!pl) return;
+    songPickerSelected.clear();
+    songPickerSearch.value = '';
+    renderSongPickerList(playlist, pl);
+    songPickerModal.classList.remove('hidden');
+    setTimeout(() => songPickerSearch.focus(), 60);
+}
+
+function renderSongPickerList(songs, pl) {
+    const term = songPickerSearch.value.trim().toLowerCase();
+    const filtered = term
+        ? songs.filter(s =>
+            s.title.toLowerCase().includes(term) ||
+            s.artist.toLowerCase().includes(term) ||
+            (s.album && s.album.toLowerCase().includes(term)))
+        : songs;
+
+    songPickerList.innerHTML = '';
+    if (filtered.length === 0) {
+        songPickerList.innerHTML = `<li style="padding:20px;color:var(--text-muted);text-align:center;">No songs match</li>`;
+        return;
+    }
+    filtered.forEach(song => {
+        const alreadyIn = pl.songs.includes(song.path);
+        const isChecked = songPickerSelected.has(song.path);
+        const li = document.createElement('li');
+        li.className = 'song-row picker-row' + (alreadyIn ? ' picker-already-in' : '');
+        li.dataset.path = song.path;
+        const artSrc = song.picture || '';
+        const defaultArt = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>`;
+        li.innerHTML = `
+            <span class="picker-check ${isChecked ? 'checked' : ''} ${alreadyIn ? 'disabled' : ''}">
+                ${alreadyIn
+                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg>`
+                : `<svg viewBox="0 0 24 24" fill="${isChecked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3"/>${isChecked ? '<path d="M7 12l4 4 6-6" fill="none" stroke="#fff" stroke-width="2"/>' : ''}</svg>`
+            }
+            </span>
+            ${artSrc
+                ? `<img src="${artSrc}" class="song-art-small" alt="" onerror="this.style.display='none'">`
+                : `<div class="song-art-small" style="display:flex;align-items:center;justify-content:center;color:var(--text-dim);">${defaultArt}</div>`
+            }
+            <div class="song-info">
+                <span class="song-title">${escapeHtml(song.title)}</span>
+                <span class="song-meta">${escapeHtml(song.artist)}${song.album ? ' • ' + escapeHtml(song.album) : ''}</span>
+            </div>
+            <span class="song-duration">${song.duration ? formatTime(song.duration) : ''}</span>
+            ${alreadyIn ? '<span style="font-size:0.75rem;color:var(--text-dim);padding:0 8px;">In playlist</span>' : ''}
+        `;
+        if (!alreadyIn) {
+            li.addEventListener('click', () => {
+                if (songPickerSelected.has(song.path)) {
+                    songPickerSelected.delete(song.path);
+                } else {
+                    songPickerSelected.add(song.path);
+                }
+                updateSongPickerCount();
+                renderSongPickerList(playlist, pl);
+            });
+        }
+        songPickerList.appendChild(li);
+    });
+    updateSongPickerCount();
+}
+
+function updateSongPickerCount() {
+    const n = songPickerSelected.size;
+    songPickerSelectedCount.textContent = n === 0 ? '0 selected' : `${n} song${n !== 1 ? 's' : ''} selected`;
+    confirmSongPickerBtn.disabled = n === 0;
+    confirmSongPickerBtn.style.opacity = n === 0 ? '0.5' : '1';
+}
+
+addSongsToPlaylistBtn.addEventListener('click', openSongPicker);
+
+songPickerSearch.addEventListener('input', () => {
+    const pl = playlists.find(p => p.id === activePlaylistId);
+    if (pl) renderSongPickerList(playlist, pl);
+});
+
+function closeSongPicker() {
+    songPickerModal.classList.add('hidden');
+    songPickerSelected.clear();
+}
+
+closeSongPickerBtn.addEventListener('click', closeSongPicker);
+cancelSongPickerBtn.addEventListener('click', closeSongPicker);
+songPickerModal.addEventListener('click', (e) => { if (e.target === songPickerModal) closeSongPicker(); });
+
+confirmSongPickerBtn.addEventListener('click', () => {
+    if (!activePlaylistId || songPickerSelected.size === 0) return;
+    const pl = playlists.find(p => p.id === activePlaylistId);
+    if (!pl) return;
+    let added = 0;
+    songPickerSelected.forEach(path => {
+        if (!pl.songs.includes(path)) { pl.songs.push(path); added++; }
+    });
+    savePlaylists();
+    renderPlaylistsNav();
+    openPlaylistView(activePlaylistId);
+    closeSongPicker();
+    showToast(`✓ Added ${added} song${added !== 1 ? 's' : ''} to "${pl.name}"`);
+});
+
+// ===================== DELETE PLAYLIST =====================
 newPlaylistBtn.addEventListener('click', () => {
     newPlaylistNameInput.value = '';
     createPlaylistModal.classList.remove('hidden');
@@ -485,10 +605,13 @@ deletePlaylistBtn.addEventListener('click', () => {
 });
 
 // ===================== CONTEXT MENU =====================
-function showContextMenu(e, index) {
+let contextTargetPlaylistId = null;
+
+function showContextMenu(e, index, fromPlaylistId = null) {
     contextTargetIndex = index;
-    const x = Math.min(e.clientX, window.innerWidth - 210);
-    const y = Math.min(e.clientY, window.innerHeight - 200);
+    contextTargetPlaylistId = fromPlaylistId;
+    const x = Math.min(e.clientX, window.innerWidth - 220);
+    const y = Math.min(e.clientY, window.innerHeight - 240);
     contextMenu.style.left = x + 'px';
     contextMenu.style.top = y + 'px';
     contextMenu.classList.remove('hidden');
@@ -496,6 +619,10 @@ function showContextMenu(e, index) {
 
     const isFav = favorites.includes(playlist[index]?.path);
     ctxFav.textContent = isFav ? '♥ Remove from Favorites' : '♡ Add to Favorites';
+
+    // Show "Remove from Playlist" only when right-clicking inside a playlist
+    const inPlaylist = !!fromPlaylistId;
+    ctxRemovePlaylist.classList.toggle('hidden', !inPlaylist);
 }
 
 document.addEventListener('click', () => {
@@ -514,46 +641,70 @@ ctxFav.addEventListener('click', () => {
     if (contextTargetIndex < 0) return;
     const path = playlist[contextTargetIndex]?.path;
     if (path) {
+        const isFavNow = !favorites.includes(path);
         toggleFavorite(path);
-        updateAllFavIcons(path, favorites.includes(path));
+        syncFavIconsForPath(path, isFavNow);
     }
     contextMenu.classList.add('hidden');
 });
 
+ctxRemovePlaylist.addEventListener('click', () => {
+    if (contextTargetIndex < 0 || !contextTargetPlaylistId) return;
+    const pl = playlists.find(p => p.id === contextTargetPlaylistId);
+    if (!pl) return;
+    const songPath = playlist[contextTargetIndex]?.path;
+    if (!songPath) return;
+    pl.songs = pl.songs.filter(p => p !== songPath);
+    savePlaylists();
+    renderPlaylistsNav();
+    openPlaylistView(contextTargetPlaylistId);
+    contextMenu.classList.add('hidden');
+    showToast('Removed from playlist');
+});
+
+let submenuHideTimer = null;
+
+function scheduleHideSubmenu() {
+    submenuHideTimer = setTimeout(() => {
+        ctxPlaylistSubmenu.classList.add('hidden');
+    }, 200);
+}
+
+function cancelHideSubmenu() {
+    clearTimeout(submenuHideTimer);
+}
+
 ctxAddPlaylist.addEventListener('mouseenter', () => {
+    cancelHideSubmenu();
     if (playlists.length === 0) {
-        ctxPlaylistSubmenu.innerHTML = `<div class="ctx-item" style="opacity:0.5;cursor:default">No playlists yet</div>`;
+        ctxPlaylistSubmenu.innerHTML = `<div class="ctx-item" style="opacity:0.5;cursor:default">No playlists yet — create one first</div>`;
     } else {
         ctxPlaylistSubmenu.innerHTML = '';
         playlists.forEach(pl => {
             const item = document.createElement('div');
             item.className = 'ctx-item';
             item.textContent = pl.name;
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
                 if (contextTargetIndex >= 0) {
                     addSongToPlaylist(pl.id, playlist[contextTargetIndex].path);
                 }
                 contextMenu.classList.add('hidden');
+                ctxPlaylistSubmenu.classList.add('hidden');
             });
             ctxPlaylistSubmenu.appendChild(item);
         });
     }
-
-    const rect = ctxAddPlaylist.getBoundingClientRect();
+    // Position: overlap by 4px so there's no gap the mouse can slip through
     ctxPlaylistSubmenu.style.top = '0';
     ctxPlaylistSubmenu.style.left = (contextMenu.offsetWidth - 4) + 'px';
     ctxPlaylistSubmenu.classList.remove('hidden');
 });
 
-ctxAddPlaylist.addEventListener('mouseleave', (e) => {
-    if (!e.relatedTarget || !ctxPlaylistSubmenu.contains(e.relatedTarget)) {
-        ctxPlaylistSubmenu.classList.add('hidden');
-    }
-});
+ctxAddPlaylist.addEventListener('mouseleave', scheduleHideSubmenu);
 
-ctxPlaylistSubmenu.addEventListener('mouseleave', () => {
-    ctxPlaylistSubmenu.classList.add('hidden');
-});
+ctxPlaylistSubmenu.addEventListener('mouseenter', cancelHideSubmenu);
+ctxPlaylistSubmenu.addEventListener('mouseleave', scheduleHideSubmenu);
 
 // ===================== PLAYBACK =====================
 async function playSong(index) {
@@ -599,18 +750,23 @@ playPauseBtn.addEventListener('click', () => {
     if (isPlaying) {
         audio.pause();
         isPlaying = false;
+        updatePlayPauseBtn();   // sync — state is correct right now
     } else {
         audio.play().then(() => {
             isPlaying = true;
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            updatePlayPauseBtn(); // inside .then() — isPlaying is now true
+        }).catch(err => {
+            console.error('Playback failed:', err);
         });
     }
-    updatePlayPauseBtn();
 });
 
 function updatePlayPauseBtn() {
     playIcon.classList.toggle('hidden', isPlaying);
     pauseIcon.classList.toggle('hidden', !isPlaying);
+    // Sync equalizer bars with play state
+    if (eqBars) eqBars.classList.toggle('paused', !isPlaying);
 }
 
 prevBtn.addEventListener('click', () => {

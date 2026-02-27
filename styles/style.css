@@ -28,6 +28,19 @@
     padding: 0;
 }
 
+/* Remove all default browser focus outlines — custom :focus-visible used per component */
+button,
+input,
+select,
+textarea {
+    outline: none;
+}
+
+button:focus-visible {
+    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.6);
+    border-radius: 4px;
+}
+
 body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--bg-base);
@@ -46,12 +59,8 @@ body {
 }
 
 .bg-visualizer {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    opacity: 0.3;
+    display: none;
+    /* visualizer removed per user request */
 }
 
 .bg-blur {
@@ -296,8 +305,9 @@ body {
 }
 
 .song-row.playing {
-    background: rgba(167, 139, 250, 0.1);
-    color: var(--primary);
+    /* subtle left border only — no distracting full-row highlight */
+    border-left: 3px solid var(--primary);
+    padding-left: calc(var(--row-padding, 14px) - 3px);
 }
 
 .song-num {
@@ -308,7 +318,38 @@ body {
 }
 
 .song-row.playing .song-num {
-    color: var(--primary);
+    /* Hide the number; show a tiny animated dot instead */
+    visibility: hidden;
+    position: relative;
+}
+
+.song-row.playing .song-num::after {
+    content: '';
+    visibility: visible;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 6px var(--primary);
+    animation: playDot 1.4s ease-in-out infinite;
+}
+
+@keyframes playDot {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(0.7);
+    }
 }
 
 .song-art-small {
@@ -611,8 +652,81 @@ body {
 }
 
 .art-placeholder-mini {
-    color: rgba(255, 255, 255, 0.15);
-    width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* ======================== EQUALIZER BARS ======================== */
+.eq-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 26px;
+    padding: 2px;
+}
+
+.eq-bar {
+    width: 4px;
+    border-radius: 2px;
+    background: var(--primary);
+    min-height: 4px;
+    animation: eqBounce 1s ease-in-out infinite;
+    transform-origin: bottom;
+    opacity: 0.85;
+}
+
+.eq-bar:nth-child(1) {
+    animation-duration: 0.8s;
+    animation-delay: 0s;
+}
+
+.eq-bar:nth-child(2) {
+    animation-duration: 1.1s;
+    animation-delay: 0.15s;
+}
+
+.eq-bar:nth-child(3) {
+    animation-duration: 0.7s;
+    animation-delay: 0.3s;
+}
+
+.eq-bar:nth-child(4) {
+    animation-duration: 0.95s;
+    animation-delay: 0.05s;
+}
+
+@keyframes eqBounce {
+
+    0%,
+    100% {
+        height: 5px;
+        opacity: 0.5;
+    }
+
+    25% {
+        height: 20px;
+        opacity: 1;
+    }
+
+    50% {
+        height: 10px;
+        opacity: 0.7;
+    }
+
+    75% {
+        height: 18px;
+        opacity: 0.9;
+    }
+}
+
+/* Paused state — bars frozen at half height */
+.eq-bars.paused .eq-bar {
+    animation-play-state: paused;
+    height: 8px;
+    opacity: 0.4;
 }
 
 .track-details-mini {
@@ -724,42 +838,48 @@ body {
     background: rgba(167, 139, 250, 0.12);
 }
 
-.play-btn {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    background: var(--text-main);
+/* ======================== PLAY BUTTON ======================== */
+/* Must come AFTER .ctrl-btn rules to win specificity */
+button.play-btn,
+button.play-btn.ctrl-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    padding: 0 !important;
+    background: #ffffff;
     color: #000 !important;
-    /* override ctrl-btn color */
     border-radius: 50%;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    /* override ctrl-btn padding */
-    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 18px rgba(255, 255, 255, 0.18);
+    outline: none;
 }
 
-.play-btn:hover {
+button.play-btn:hover,
+button.play-btn.ctrl-btn:hover {
     transform: scale(1.1);
     background: #ffffff !important;
-    /* override ctrl-btn:hover bg */
     color: #000 !important;
-    box-shadow: 0 6px 24px rgba(255, 255, 255, 0.25);
+    box-shadow: 0 6px 26px rgba(255, 255, 255, 0.28);
 }
 
-.play-btn svg {
+button.play-btn svg {
     width: 18px;
     height: 18px;
     display: block;
+    fill: #000;
+    stroke: none;
+    flex-shrink: 0;
 }
 
-.play-btn #play-icon {
+button.play-btn #play-icon {
     margin-left: 2px;
-    /* optical center for triangle */
+    /* optical center for play triangle */
 }
 
 .btn-primary {
@@ -776,6 +896,11 @@ body {
     font-size: 0.88rem;
     font-weight: 600;
     transition: var(--transition-fast);
+    outline: none;
+}
+
+.btn-primary:focus-visible {
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.4);
 }
 
 .btn-primary:hover {
@@ -797,11 +922,16 @@ body {
     font-size: 0.88rem;
     font-weight: 500;
     transition: var(--transition-fast);
+    outline: none;
 }
 
 .btn-ghost:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-main);
+}
+
+.btn-ghost:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
 .btn-danger {
@@ -818,10 +948,15 @@ body {
     font-size: 0.88rem;
     font-weight: 500;
     transition: var(--transition-fast);
+    outline: none;
 }
 
 .btn-danger:hover {
     background: rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:focus-visible {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
 }
 
 .btn-danger-ghost {
@@ -1203,6 +1338,15 @@ body {
     color: var(--text-main);
 }
 
+.ctx-danger {
+    color: var(--danger);
+}
+
+.ctx-danger:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ff6b6b;
+}
+
 .ctx-separator {
     height: 1px;
     background: var(--border-color);
@@ -1213,12 +1357,18 @@ body {
     position: absolute;
     left: 100%;
     top: 0;
+    margin-left: -6px;
+    /* overlap parent to close the hover gap */
+    padding-left: 6px;
+    /* keep visual separation via the inner container */
     background: rgba(20, 20, 28, 0.98);
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 6px;
-    min-width: 160px;
+    min-width: 170px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px);
+    z-index: 250;
 }
 
 /* ======================== TOAST ======================== */
@@ -1284,4 +1434,41 @@ body {
     50% {
         opacity: 0.7;
     }
+}
+
+/* ======================== SONG PICKER ======================== */
+.picker-row {
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+.picker-row:hover {
+    background: rgba(167, 139, 250, 0.07);
+}
+
+.picker-already-in {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.picker-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    min-width: 20px;
+    color: var(--text-dim);
+    margin-right: 4px;
+}
+
+.picker-check.checked {
+    color: var(--primary);
+}
+
+.picker-check.disabled {
+    color: var(--text-dim);
+}
+
+.picker-row.selected-row {
+    background: rgba(167, 139, 250, 0.10);
 }
