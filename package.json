@@ -1,0 +1,17 @@
+{
+  "name": "soundstorm",
+  "version": "1.0.0",
+  "description": "SoundStorm — A beautiful, open-source desktop MP3 player.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^40.6.1",
+    "mime-types": "^3.0.2",
+    "music-metadata": "^11.12.1"
+  }
+}
