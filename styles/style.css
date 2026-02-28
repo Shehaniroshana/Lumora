@@ -1,13 +1,13 @@
 :root {
-    --bg-base: #0f0f11;
-    --sidebar-bg: rgba(18, 18, 22, 0.95);
-    --panel-bg: rgba(22, 22, 28, 0.5);
-    --panel-dark: rgba(12, 12, 16, 0.95);
+    --bg-base: #000000;
+    --sidebar-bg: rgba(18, 18, 18, 0.95);
+    --panel-bg: rgba(18, 18, 18, 0.45);
+    --panel-dark: rgba(10, 10, 10, 0.95);
 
-    --primary: #a78bfa;
-    --primary-hover: #c4b5fd;
-    --accent: #7c3aed;
-    --accent-glow: rgba(167, 139, 250, 0.25);
+    --primary: #ffffff;
+    --primary-hover: #e4e4e7;
+    --accent: #d4d4d8;
+    --accent-glow: rgba(255, 255, 255, 0.25);
 
     --text-main: #f4f4f5;
     --text-muted: #71717a;
@@ -37,7 +37,7 @@ textarea {
 }
 
 button:focus-visible {
-    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.6);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
     border-radius: 4px;
 }
 
@@ -172,7 +172,7 @@ body {
 
 .nav-item.active {
     color: var(--primary);
-    background: rgba(167, 139, 250, 0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .nav-item.active svg {
@@ -216,7 +216,7 @@ body {
 .btn-add-playlist:hover {
     border-color: var(--primary);
     color: var(--primary);
-    background: rgba(167, 139, 250, 0.05);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-bottom {
@@ -419,15 +419,15 @@ body {
 
 .song-fav-btn.active {
     opacity: 1;
-    color: #f43f5e;
+    color: var(--primary);
 }
 
 .song-fav-btn.active svg {
-    fill: #f43f5e;
+    fill: var(--primary);
 }
 
 .song-fav-btn:hover {
-    color: #f43f5e;
+    color: var(--primary);
     transform: scale(1.25);
     opacity: 1;
 }
@@ -447,8 +447,8 @@ body {
 
 .search-wrap-big:focus-within {
     border-color: var(--primary);
-    background: rgba(167, 139, 250, 0.06);
-    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
 .search-input-big {
@@ -554,7 +554,7 @@ body {
 .folder-icon {
     width: 36px;
     height: 36px;
-    background: rgba(167, 139, 250, 0.1);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -604,6 +604,7 @@ body {
     justify-content: center;
     font-size: 2rem;
     flex-shrink: 0;
+    color: var(--bg-base) !important;
 }
 
 /* ======================== PLAYBACK CONTROLS ======================== */
@@ -758,12 +759,12 @@ body {
 }
 
 .fav-btn.active {
-    color: #f43f5e;
+    color: var(--primary);
 }
 
 .fav-btn.active svg {
-    fill: #f43f5e;
-    stroke: #f43f5e;
+    fill: var(--primary);
+    stroke: var(--primary);
 }
 
 .center-controls {
@@ -835,7 +836,7 @@ body {
 /* Keep purple when hovering an active shuffle/repeat button */
 .ctrl-btn.active-mode:hover {
     color: var(--primary-hover);
-    background: rgba(167, 139, 250, 0.12);
+    background: rgba(255, 255, 255, 0.12);
 }
 
 /* ======================== PLAY BUTTON ======================== */
@@ -900,7 +901,7 @@ button.play-btn #play-icon {
 }
 
 .btn-primary:focus-visible {
-    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.4);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
 }
 
 .btn-primary:hover {
@@ -1027,10 +1028,11 @@ button.play-btn #play-icon {
     background: rgba(18, 18, 24, 0.98);
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    width: 420px;
+    width: 600px;
     max-width: 90vw;
+    max-height: 85vh;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-    overflow: hidden;
+    overflow-y: auto;
     animation: modalIn 0.2s ease;
 }
 
@@ -1137,7 +1139,7 @@ button.play-btn #play-icon {
 
 .custom-select:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
 .custom-select option {
@@ -1164,7 +1166,7 @@ button.play-btn #play-icon {
 }
 
 .color-picker::-webkit-color-swatch {
-    border: 2px solid var(--border-hover);
+    border: none;
     border-radius: 50%;
 }
 
@@ -1197,7 +1199,7 @@ button.play-btn #play-icon {
 
 .custom-dropdown.open .custom-dropdown-trigger {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
 .custom-dropdown.open .custom-dropdown-trigger svg {
@@ -1245,13 +1247,13 @@ button.play-btn #play-icon {
 }
 
 .custom-dropdown-item:hover {
-    background: rgba(167, 139, 250, 0.1);
+    background: rgba(255, 255, 255, 0.1);
     color: var(--text-main);
 }
 
 .custom-dropdown-item.selected {
     color: var(--primary);
-    background: rgba(167, 139, 250, 0.08);
+    background: rgba(255, 255, 255, 0.08);
     font-weight: 600;
 }
 
@@ -1289,7 +1291,7 @@ button.play-btn #play-icon {
 
 .form-input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
 
 .form-footer {
@@ -1443,7 +1445,7 @@ button.play-btn #play-icon {
 }
 
 .picker-row:hover {
-    background: rgba(167, 139, 250, 0.07);
+    background: rgba(255, 255, 255, 0.07);
 }
 
 .picker-already-in {
@@ -1470,5 +1472,143 @@ button.play-btn #play-icon {
 }
 
 .picker-row.selected-row {
-    background: rgba(167, 139, 250, 0.10);
+    background: rgba(255, 255, 255, 0.10);
+}
+
+/* ======================== MOBILE RESPONSIVENESS ======================== */
+.mobile-header {
+    display: none;
+    align-items: center;
+    padding: 12px 18px;
+    background: rgba(12, 12, 18, 0.5);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    margin-right: 12px;
+    border-radius: 6px;
+    transition: var(--transition-fast);
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-brand {
+    padding: 0;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    bottom: 90px;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 40;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+@media (max-width: 850px) {
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .mobile-header {
+        display: flex;
+        /* Turn on mobile header */
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        /* Hide off-screen */
+        top: 0;
+        bottom: 90px;
+        width: 260px;
+        z-index: 50;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-right: 1px solid var(--border-color);
+        background: rgba(12, 12, 18, 0.95);
+    }
+
+    .sidebar.sidebar-open {
+        transform: translateX(260px);
+        /* Slide in */
+    }
+
+    .sidebar-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Make player bar elements more compact */
+    .playback-controls {
+        padding: 0 16px;
+        gap: 16px;
+    }
+
+    .now-playing-mini {
+        width: auto;
+        min-width: 130px;
+        flex: 1;
+    }
+
+    .volume-controls {
+        display: none;
+        /* Hide volume bar to save space on mobile */
+    }
+
+    .player-center {
+        max-width: 200px;
+        /* Constrain center controls */
+    }
+
+    /* Modal responsiveness */
+    .modal-content {
+        width: 95%;
+        padding: 16px;
+        max-height: 90vh;
+    }
+
+    .settings-grid {
+        grid-template-columns: 1fr;
+        /* Stack settings vertically */
+    }
+
+    .song-meta {
+        display: none;
+        /* Hide album details in song row */
+    }
+
+    .song-duration {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 500px) {
+    .player-actions .icon-btn:not(#play-pause-btn) {
+        display: none;
+        /* Only show play/pause on tiny screens */
+    }
+
+    #track-artist {
+        display: none;
+        /* Hide artist name on tiny screens */
+    }
 }

@@ -78,3 +78,6 @@ export const fontDropdownTrigger = document.getElementById('font-dropdown-trigge
 export const fontDropdownMenu = document.getElementById('font-dropdown-menu');
 export const fontDropdownLabel = document.getElementById('font-dropdown-label');
 export const canvas = document.getElementById('visualizer');
+export const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+export const sidebar = document.getElementById('sidebar');
+export const sidebarOverlay = document.getElementById('sidebar-overlay');

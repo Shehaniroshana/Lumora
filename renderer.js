@@ -10,7 +10,7 @@
 const audio = new Audio();
 audio.volume = 1;
 
-import { addFolderBtn, addFolderBtn2, playlistEl, loadingIndicator, libraryCount, playPauseBtn, playIcon, pauseIcon, prevBtn, nextBtn, shuffleBtn, repeatBtn, seekBar, timeCurrent, timeTotal, volumeBar, muteBtn, volIconOn, volIconOff, trackTitle, trackArtist, trackArt, artPlaceholder, eqBars, bgBlur, playerFavBtn, favCountBadge, favCountText, favoritesList, favoritesEmpty, searchInput, searchResults, searchHint, playlistsNavList, newPlaylistBtn, folderList, settingsBtn, settingsModal, closeSettingsBtn, createPlaylistModal, closeCreatePlaylistBtn, cancelCreatePlaylistBtn, confirmCreatePlaylistBtn, newPlaylistNameInput, contextMenu, ctxPlay, ctxFav, ctxAddPlaylist, ctxPlaylistSubmenu, ctxRemovePlaylist, deletePlaylistBtn, playlistViewName, playlistViewCount, playlistViewSongs, playlistEmpty, addSongsToPlaylistBtn, songPickerModal, closeSongPickerBtn, cancelSongPickerBtn, confirmSongPickerBtn, songPickerSearch, songPickerList, songPickerSelectedCount, toast, colorPicker, bgColorPicker, panelColorPicker, glassOpacity, opacityVal, blurIntensity, blurVal, fontSelect, resetSettingsBtn, bgImageBtn, clearBgImageBtn, fontDropdown, fontDropdownTrigger, fontDropdownMenu, fontDropdownLabel, canvas } from './js/ui/dom.js';
+import { addFolderBtn, addFolderBtn2, playlistEl, loadingIndicator, libraryCount, playPauseBtn, playIcon, pauseIcon, prevBtn, nextBtn, shuffleBtn, repeatBtn, seekBar, timeCurrent, timeTotal, volumeBar, muteBtn, volIconOn, volIconOff, trackTitle, trackArtist, trackArt, artPlaceholder, eqBars, bgBlur, playerFavBtn, favCountBadge, favCountText, favoritesList, favoritesEmpty, searchInput, searchResults, searchHint, playlistsNavList, newPlaylistBtn, folderList, settingsBtn, settingsModal, closeSettingsBtn, createPlaylistModal, closeCreatePlaylistBtn, cancelCreatePlaylistBtn, confirmCreatePlaylistBtn, newPlaylistNameInput, contextMenu, ctxPlay, ctxFav, ctxAddPlaylist, ctxPlaylistSubmenu, ctxRemovePlaylist, deletePlaylistBtn, playlistViewName, playlistViewCount, playlistViewSongs, playlistEmpty, addSongsToPlaylistBtn, songPickerModal, closeSongPickerBtn, cancelSongPickerBtn, confirmSongPickerBtn, songPickerSearch, songPickerList, songPickerSelectedCount, toast, colorPicker, bgColorPicker, panelColorPicker, glassOpacity, opacityVal, blurIntensity, blurVal, fontSelect, resetSettingsBtn, bgImageBtn, clearBgImageBtn, fontDropdown, fontDropdownTrigger, fontDropdownMenu, fontDropdownLabel, canvas, mobileMenuBtn, sidebar, sidebarOverlay } from './js/ui/dom.js';
 import { state, saveFavorites, savePlaylists, saveFolders } from './js/core/state.js';
 import { escapeHtml, showToast, formatTime } from './js/core/utils.js';
 
@@ -60,11 +60,37 @@ function switchView(viewId, params = {}) {
     if (viewId === 'playlist' && params.id) openPlaylistView(params.id);
     if (viewId === 'folders') renderFolderList();
     if (viewId === 'search') searchInput.focus();
+
+    // Close mobile sidebar if open
+    if (sidebar && sidebar.classList.contains('sidebar-open')) {
+        sidebar.classList.remove('sidebar-open');
+        sidebarOverlay.classList.remove('active');
+    }
 }
 
 document.querySelectorAll('.nav-item[data-view]').forEach(item => {
     item.addEventListener('click', () => switchView(item.dataset.view));
 });
+
+// Mobile Sidebar Toggle
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', () => {
+        const isOpen = sidebar.classList.contains('sidebar-open');
+        if (isOpen) {
+            sidebar.classList.remove('sidebar-open');
+            sidebarOverlay.classList.remove('active');
+        } else {
+            sidebar.classList.add('sidebar-open');
+            sidebarOverlay.classList.add('active');
+        }
+    });
+}
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('sidebar-open');
+        sidebarOverlay.classList.remove('active');
+    });
+}
 
 // ===================== FOLDER MANAGEMENT =====================
 async function doAddFolder() {
@@ -178,7 +204,7 @@ function renderSongRow(item, index, container, fromPlaylistId = null) {
         btn.title = isFavNow ? 'Remove from Favorites' : 'Add to Favorites';
         const svg = btn.querySelector('svg');
         svg.setAttribute('fill', isFavNow ? 'currentColor' : 'none');
-        svg.setAttribute('stroke', isFavNow ? '#f43f5e' : 'currentColor');
+        svg.setAttribute('stroke', isFavNow ? 'var(--primary)' : 'currentColor');
         // Sync all other rows showing the same song
         syncFavIconsForPath(item.path, isFavNow);
     });
@@ -204,7 +230,7 @@ function syncFavIconsForPath(path, isFav) {
                 btn.title = isFav ? 'Remove from Favorites' : 'Add to Favorites';
                 const svg = btn.querySelector('svg');
                 svg.setAttribute('fill', isFav ? 'currentColor' : 'none');
-                svg.setAttribute('stroke', isFav ? '#f43f5e' : 'currentColor');
+                svg.setAttribute('stroke', isFav ? 'var(--primary)' : 'currentColor');
             }
         }
     });
@@ -248,8 +274,8 @@ function updatePlayerFavIcon(path) {
     playerFavBtn.classList.toggle('active', isFav);
     const svg = playerFavBtn.querySelector('svg');
     if (svg) {
-        svg.setAttribute('fill', isFav ? '#f43f5e' : 'none');
-        svg.setAttribute('stroke', isFav ? '#f43f5e' : 'currentColor');
+        svg.setAttribute('fill', isFav ? 'var(--primary)' : 'none');
+        svg.setAttribute('stroke', isFav ? 'var(--primary)' : 'currentColor');
     }
     playerFavBtn.title = isFav ? 'Remove from Favorites' : 'Add to Favorites';
 }
@@ -282,8 +308,8 @@ playerFavBtn.addEventListener('click', () => {
     // Update the player bar button itself
     playerFavBtn.classList.toggle('active', isFavNow);
     const svg = playerFavBtn.querySelector('svg');
-    svg.setAttribute('fill', isFavNow ? '#f43f5e' : 'none');
-    svg.setAttribute('stroke', isFavNow ? '#f43f5e' : 'currentColor');
+    svg.setAttribute('fill', isFavNow ? 'var(--primary)' : 'none');
+    svg.setAttribute('stroke', isFavNow ? 'var(--primary)' : 'currentColor');
 });
 
 // ===================== PLAYLISTS =====================
@@ -808,11 +834,11 @@ function loadSettings() {
     if (savedBg) { document.documentElement.style.setProperty('--bg-base', savedBg); bgColorPicker.value = savedBg; }
 
     const savedPanel = localStorage.getItem('soundstorm-panel-color');
-    const savedOpacity = localStorage.getItem('soundstorm-glass-opacity') || '60';
+    const savedOpacity = localStorage.getItem('soundstorm-glass-opacity') || '45';
     if (savedPanel) panelColorPicker.value = savedPanel;
     glassOpacity.value = savedOpacity;
     opacityVal.textContent = savedOpacity + '%';
-    updatePanelGlass(savedPanel || '#1a1a1e', savedOpacity);
+    updatePanelGlass(savedPanel || '#121212', savedOpacity);
 
     const savedFont = localStorage.getItem('soundstorm-font') || "'Outfit', sans-serif";
     applyFont(savedFont);
@@ -918,17 +944,17 @@ bgImageBtn.addEventListener('click', async () => {
 clearBgImageBtn.addEventListener('click', () => { setAppWallpaper(null); localStorage.removeItem('soundstorm-bg-image'); });
 resetSettingsBtn.addEventListener('click', () => {
     ['soundstorm-accent-color', 'soundstorm-bg-color', 'soundstorm-panel-color', 'soundstorm-glass-opacity', 'soundstorm-font', 'soundstorm-bg-image', 'soundstorm-blur-intensity'].forEach(k => localStorage.removeItem(k));
-    document.documentElement.style.setProperty('--primary', '#a78bfa');
-    document.documentElement.style.setProperty('--bg-base', '#0f0f11');
-    updatePanelGlass('#1a1a1e', 60);
+    document.documentElement.style.setProperty('--primary', '#ffffff');
+    document.documentElement.style.setProperty('--bg-base', '#000000');
+    updatePanelGlass('#121212', 45);
     setAppWallpaper(null);
     applyBlur(80);
     document.body.style.fontFamily = "'Outfit', sans-serif";
-    colorPicker.value = '#a78bfa';
-    bgColorPicker.value = '#0f0f11';
-    panelColorPicker.value = '#1a1a1e';
-    glassOpacity.value = 60;
-    opacityVal.textContent = '60%';
+    colorPicker.value = '#ffffff';
+    bgColorPicker.value = '#000000';
+    panelColorPicker.value = '#121212';
+    glassOpacity.value = 45;
+    opacityVal.textContent = '45%';
     blurIntensity.value = 80;
     blurVal.textContent = '80px';
     applyFont("'Outfit', sans-serif");
@@ -975,9 +1001,9 @@ function drawVisualizer() {
         const barH = (v / 255) * canvas.height * 0.8;
         const opacity = 0.4 + (v / 255) * 0.6;
 
-        canvasCtx.fillStyle = `rgba(167, 139, 250, ${opacity * 0.5})`;
+        canvasCtx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
         canvasCtx.shadowBlur = 12;
-        canvasCtx.shadowColor = `rgba(167, 139, 250, 0.3)`;
+        canvasCtx.shadowColor = `rgba(255, 255, 255, 0.3)`;
 
         const y = canvas.height - barH;
         canvasCtx.beginPath();

@@ -18,8 +18,11 @@
         <div id="bg-blur" class="bg-blur"></div>
 
         <div class="app-layout">
+            <!-- ===== SIDEBAR OVERLAY (Mobile) ===== -->
+            <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
             <!-- ===== SIDEBAR ===== -->
-            <aside class="sidebar">
+            <aside class="sidebar" id="sidebar">
                 <div class="app-brand">
                     <span class="brand-icon">✦</span>
                     <span class="brand-name">SoundStorm</span>
@@ -93,6 +96,22 @@
 
             <!-- ===== MAIN CONTENT ===== -->
             <main class="main-content">
+
+                <!-- === MOBILE HEADER === -->
+                <div class="mobile-header">
+                    <button id="mobile-menu-btn" class="icon-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="app-brand mobile-brand">
+                        <span class="brand-name" style="font-size: 1.2rem; color: var(--text-main);">SoundStorm</span>
+                    </div>
+                </div>
+
 
                 <!-- === VIEW: LIBRARY === -->
                 <div id="view-library" class="view active">
@@ -376,21 +395,21 @@
                         <h3>Theme &amp; Colors</h3>
                         <div class="setting-group">
                             <label for="color-picker" class="setting-label">Accent Color</label>
-                            <input type="color" id="color-picker" class="color-picker" value="#d4d4d8">
+                            <input type="color" id="color-picker" class="custom-color-picker" value="#ffffff">
                         </div>
                         <div class="setting-group">
                             <div class="label-desc">
                                 <label for="bg-color-picker" class="setting-label">Base Background</label>
                                 <span class="setting-desc">Main app background color</span>
                             </div>
-                            <input type="color" id="bg-color-picker" class="color-picker" value="#0f0f11">
+                            <input type="color" id="bg-color-picker" class="custom-color-picker" value="#000000">
                         </div>
                         <div class="setting-group">
                             <div class="label-desc">
                                 <label for="panel-color-picker" class="setting-label">Panel Color</label>
                                 <span class="setting-desc">Base color for glass panels</span>
                             </div>
-                            <input type="color" id="panel-color-picker" class="color-picker" value="#1a1a1e">
+                            <input type="color" id="panel-color-picker" class="custom-color-picker" value="#121212">
                         </div>
                         <div class="setting-group" style="align-items: flex-start; flex-direction: column; gap: 8px;">
                             <div class="label-desc" style="width: 100%;">
@@ -414,10 +433,10 @@
                         <div class="setting-group">
                             <div class="label-desc">
                                 <label for="glass-opacity" class="setting-label">Glass Opacity <span
-                                        id="opacity-val">60%</span></label>
+                                        id="opacity-val">45%</span></label>
                                 <span class="setting-desc">Transparency of panels</span>
                             </div>
-                            <input type="range" id="glass-opacity" class="custom-slider" min="10" max="100" value="60"
+                            <input type="range" id="glass-opacity" class="custom-slider" min="10" max="100" value="45"
                                 style="width: 120px;">
                         </div>
                     </div>
