@@ -3,6 +3,9 @@ export const addFolderBtn2 = document.getElementById('add-folder-btn-2');
 export const playlistEl = document.getElementById('playlist');
 export const loadingIndicator = document.getElementById('loading-indicator');
 export const libraryCount = document.getElementById('library-count');
+
+// Playback Controls Container
+export const playbackControls = document.querySelector('.playback-controls');
 export const playPauseBtn = document.getElementById('play-pause-btn');
 export const playIcon = document.getElementById('play-icon');
 export const pauseIcon = document.getElementById('pause-icon');
@@ -48,6 +51,9 @@ export const ctxFav = document.getElementById('ctx-fav');
 export const ctxAddPlaylist = document.getElementById('ctx-add-playlist');
 export const ctxPlaylistSubmenu = document.getElementById('ctx-playlist-submenu');
 export const ctxRemovePlaylist = document.getElementById('ctx-remove-playlist');
+export const ctxReveal = document.getElementById('ctx-reveal');
+export const ctxRename = document.getElementById('ctx-rename');
+export const ctxDelete = document.getElementById('ctx-delete');
 export const deletePlaylistBtn = document.getElementById('delete-playlist-btn');
 export const playlistViewName = document.getElementById('playlist-view-name');
 export const playlistViewCount = document.getElementById('playlist-view-count');
@@ -58,6 +64,13 @@ export const songPickerModal = document.getElementById('song-picker-modal');
 export const closeSongPickerBtn = document.getElementById('close-song-picker-btn');
 export const cancelSongPickerBtn = document.getElementById('cancel-song-picker-btn');
 export const confirmSongPickerBtn = document.getElementById('confirm-song-picker-btn');
+
+// Rename Modal
+export const renameModal = document.getElementById('rename-modal');
+export const closeRenameBtn = document.getElementById('close-rename-btn');
+export const cancelRenameBtn = document.getElementById('cancel-rename-btn');
+export const confirmRenameBtn = document.getElementById('confirm-rename-btn');
+export const renameInput = document.getElementById('rename-input');
 export const songPickerSearch = document.getElementById('song-picker-search');
 export const songPickerList = document.getElementById('song-picker-list');
 export const songPickerSelectedCount = document.getElementById('song-picker-selected-count');
@@ -81,3 +94,45 @@ export const canvas = document.getElementById('visualizer');
 export const mobileMenuBtn = document.getElementById('mobile-menu-btn');
 export const sidebar = document.getElementById('sidebar');
 export const sidebarOverlay = document.getElementById('sidebar-overlay');
+export const bassGain = document.getElementById('bass-gain');
+export const bassVal = document.getElementById('bass-val');
+export const trebleGain = document.getElementById('treble-gain');
+export const trebleVal = document.getElementById('treble-val');
+export const resetSoundBtn = document.getElementById('reset-sound-btn');
+export const eqToggleBtn = document.getElementById('eq-toggle-btn');
+export const eqPanel = document.getElementById('eq-panel');
+export const eqPanelClose = document.getElementById('eq-panel-close');
+export const panelBassGain = document.getElementById('panel-bass-gain');
+export const panelBassVal = document.getElementById('panel-bass-val');
+export const panelTrebleGain = document.getElementById('panel-treble-gain');
+export const panelTrebleVal = document.getElementById('panel-treble-val');
+export const eqPanelReset = document.getElementById('eq-panel-reset');
+
+// Video Player
+export const videoPlayerContainer = document.getElementById('video-player-container');
+export const videoPlayer = document.getElementById('video-player');
+export const closeVideoBtn = document.getElementById('close-video-btn');
+
+// Videos View - Main Content
+export const videosList = document.getElementById('videos-list');
+export const videosCount = document.getElementById('videos-count');
+export const videosEmpty = document.getElementById('videos-empty');
+export const videoCountBadge = document.getElementById('video-count-badge');
+
+// Main Video Player (in content area)
+export const videoPlayerMain = document.getElementById('video-player-main');
+export const mainVideoPlayer = document.getElementById('main-video-player');
+export const currentVideoTitle = document.getElementById('current-video-title');
+export const loadSubtitleBtn = document.getElementById('load-subtitle-btn');
+export const closeVideoPlayerBtn = document.getElementById('close-video-player-btn');
+
+// Sort controls
+export const librarySortBtn = document.getElementById('library-sort-btn');
+export const librarySortLabel = document.getElementById('library-sort-label');
+export const librarySortMenu = document.getElementById('library-sort-menu');
+export const videosSortBtn = document.getElementById('videos-sort-btn');
+export const videosSortLabel = document.getElementById('videos-sort-label');
+export const videosSortMenu = document.getElementById('videos-sort-menu');
+export const prevVideoBtn = document.getElementById('prev-video-btn');
+export const nextVideoBtn = document.getElementById('next-video-btn');
+export const videoQualityBadge = document.getElementById('video-quality-badge');

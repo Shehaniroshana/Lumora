@@ -9,14 +9,14 @@ const mmPromise = import('music-metadata');
  * @returns {Promise<Object>} - Formatted metadata object
  */
 async function parse(filePath) {
-    try {
+    try {``
         const mm = await mmPromise;
         const metadata = await mm.parseFile(filePath);
 
         let pictureBase64 = null;
         if (metadata.common.picture && metadata.common.picture.length > 0) {
             const pic = metadata.common.picture[0];
-            pictureBase64 = `data:${pic.format};base64,${pic.data.toString('base64')}`;
+            pictureBase64 = `data:${pic.format};base64,${Buffer.from(pic.data).toString('base64')}`;
         }
 
         return {

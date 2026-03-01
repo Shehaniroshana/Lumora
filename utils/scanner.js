@@ -19,7 +19,8 @@ async function scanDirectory(dirPath) {
                     results = results.concat(subResults);
                 }
             } else {
-                if (dirent.name.toLowerCase().endsWith('.mp3')) {
+                // Match all supported audio and video formats
+                if (/\.(mp3|ogg|flac|aac|wav|m4a|opus|wma|mp4|webm|mkv|mov|avi)$/i.test(dirent.name)) {
                     results.push(res);
                 }
             }

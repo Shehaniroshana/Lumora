@@ -1,17 +1,39 @@
 {
+    "build": {
+      "appId": "com.soundstorm.player",
+      "productName": "SoundStorm",
+      "linux": {
+        "target": ["deb", "AppImage"],
+        "icon": "assets/new.png",
+        "category": "AudioVideo"
+      },
+      "files": [
+        "**/*",
+        "!node_modules/.cache/**"
+      ]
+    },
   "name": "soundstorm",
+  "icon": "assets/new.png",
   "version": "1.0.0",
   "description": "SoundStorm — A beautiful, open-source desktop MP3 player.",
   "main": "main.js",
   "scripts": {
-    "start": "electron . --no-sandbox"
+    "start": "electron . --no-sandbox",
+    "build": "electron-builder"
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "Shehan Iroshana",
+    "email": "Shehanroshan@example.com"
+  },
   "license": "ISC",
   "dependencies": {
-    "electron": "^40.6.1",
     "mime-types": "^3.0.2",
     "music-metadata": "^11.12.1"
+  },
+  "devDependencies": {
+    "electron": "^40.6.1",
+    "electron-builder": "^26.8.1",
+    "sharp": "^0.34.5"
   }
 }

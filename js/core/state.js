@@ -21,7 +21,8 @@ export const state = {
     contextTargetIndex: -1,      // song index for right-click context menu
     contextTargetPlaylistId: null, // playlist ID for context menu
 
-    playQueueContext: []         // array of global indices representing the current playback queue
+    playQueueContext: [],         // array of global indices representing the current playback queue
+    videos: [], // detected video files
 };
 
 // ===================== Persistence Helpers =====================
@@ -35,4 +36,21 @@ export function savePlaylists() {
 
 export function saveFolders() {
     localStorage.setItem('soundstorm-folders', JSON.stringify(state.scannedFolders));
+}
+
+export function saveLastTrack(trackPath) {
+    localStorage.setItem('soundstorm-last-track', trackPath);
+}
+
+export function getLastTrack() {
+    return localStorage.getItem('soundstorm-last-track');
+}
+
+export function saveLastTrackTime(time) {
+    localStorage.setItem('soundstorm-last-track-time', time.toString());
+}
+
+export function getLastTrackTime() {
+    const time = localStorage.getItem('soundstorm-last-track-time');
+    return time ? parseFloat(time) : 0;
 }

@@ -1,7 +1,17 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, session, shell } = require('electron');
 const path = require('node:path');
+const fs = require('node:fs/promises');
 const scanner = require('./utils/scanner');
 const metadataParser = require('./utils/metadata');
+
+// Suppress Linux/systemd dbus transient unit conflict warning
+app.commandLine.appendSwitch('disable-features', 'MediaSessionService');
+
+// Memory and performance optimizations
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=512');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
 
 const createWindow = () => {
     const mainWindow = new BrowserWindow({
@@ -13,13 +23,16 @@ const createWindow = () => {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
+            enableWebSQL: false,
+            // Memory optimizations
+            backgroundThrottling: true,
         },
         autoHideMenuBar: true,
         backgroundColor: '#121212',
+        icon: path.join(__dirname, 'assets', 'new.png'),
     });
 
     mainWindow.loadFile('index.html');
-    mainWindow.webContents.openDevTools();
 
     mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
         console.log(`[Renderer] ${message}`);
@@ -27,6 +40,10 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
+    
+    // Clear cache on startup to free memory
+    session.defaultSession.clearCache();
+
     // Open a folder dialog and return selected paths
     ipcMain.handle('dialog:openDirectory', async () => {
         const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -46,6 +63,23 @@ app.whenReady().then(() => {
         });
         if (canceled) return null;
         return filePaths[0]; // Retun solitary file path
+    });
+
+    // Open file dialog (generic)
+    ipcMain.handle('dialog:openFile', async (event, options) => {
+        const { canceled, filePaths } = await dialog.showOpenDialog(options);
+        if (canceled) return [];
+        return filePaths;
+    });
+
+    // Check if file exists
+    ipcMain.handle('fs:fileExists', async (event, filePath) => {
+        try {
+            await fs.access(filePath);
+            return true;
+        } catch {
+            return false;
+        }
     });
 
     // Get default music folders
@@ -88,6 +122,35 @@ app.whenReady().then(() => {
                 path: filePath
             };
         }
+    });
+
+    ipcMain.handle('fs:rename', async (event, oldPath, newName) => {
+        try {
+            const dir = path.dirname(oldPath);
+            const ext = path.extname(oldPath);
+            // Ensure no malicious slashes
+            const safeName = newName.replace(/[\\/:\*\?"<>\|]/g, '');
+            const newPath = path.join(dir, safeName + ext);
+            await fs.rename(oldPath, newPath);
+            return { success: true, newPath };
+        } catch (error) {
+            console.error('Rename failed:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('fs:delete', async (event, filePath) => {
+        try {
+            await shell.trashItem(filePath);
+            return { success: true };
+        } catch (error) {
+            console.error('Delete failed:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    ipcMain.handle('fs:reveal', async (event, filePath) => {
+        shell.showItemInFolder(filePath);
     });
 
     createWindow();

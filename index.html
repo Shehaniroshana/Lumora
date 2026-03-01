@@ -4,14 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: file:; media-src 'self' file: blob:; connect-src 'none'">
     <title>SoundStorm — Open Source MP3 Player</title>
     <meta name="description"
         content="SoundStorm: A beautiful, open-source desktop MP3 player with playlists, favorites, visualizer, and full customization.">
+    <link rel="icon" type="image/svg+xml" href="assets/new.svg">
+    <link rel="shortcut icon" href="assets/new.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/style.css">
 </head>
 
 <body>
+    <!-- Global App Loader -->
+    <div id="app-loader" class="app-loader">
+        <div class="loader-content">
+            <div class="loader-spinner">
+                <img src="assets/new.svg" alt="SoundStorm Logo" class="loader-logo">
+            </div>
+            <h2 class="loader-title">SoundStorm</h2>
+            <p class="loader-text">Loading your music...</p>
+        </div>
+    </div>
+    
     <div class="app-container">
         <!-- Global Background -->
         <canvas id="visualizer" class="bg-visualizer"></canvas>
@@ -24,7 +40,9 @@
             <!-- ===== SIDEBAR ===== -->
             <aside class="sidebar" id="sidebar">
                 <div class="app-brand">
-                    <span class="brand-icon">✦</span>
+                    <span class="brand-icon">
+                        <img src="assets/new.svg" alt="SoundStorm logo" style="width:35px;height:35px;vertical-align:middle;">
+                    </span>
                     <span class="brand-name">SoundStorm</span>
                 </div>
 
@@ -58,6 +76,17 @@
                         </svg>
                         <span>Search</span>
                     </div>
+
+                    <div class="nav-item" data-view="videos">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"
+                            height="18">
+                            <path d="M23 7l-7 5 7 5V7z"/>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                        </svg>
+                        <span>Videos</span>
+                        <span id="video-count-badge" class="badge hidden">0</span>
+                    </div>
+
 
                     <p class="nav-label" style="margin-top: 16px;">My Playlists</p>
 
@@ -120,13 +149,33 @@
                             <h1 class="view-title">Library</h1>
                             <p class="view-subtitle" id="library-count">0 songs</p>
                         </div>
-                        <button id="add-folder-btn" class="btn-primary">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
-                                height="16">
-                                <path d="M12 5v14M5 12h14" />
-                            </svg>
-                            Add Folder
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="sort-dropdown">
+                                <button id="library-sort-btn" class="sort-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M3 6h18M7 12h10M11 18h6"/>
+                                    </svg>
+                                    <span id="library-sort-label">Title</span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-left: 4px;">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </button>
+                                <div id="library-sort-menu" class="sort-menu hidden">
+                                    <div class="sort-option" data-sort="title">Title (A-Z)</div>
+                                    <div class="sort-option" data-sort="artist">Artist (A-Z)</div>
+                                    <div class="sort-option" data-sort="album">Album (A-Z)</div>
+                                    <div class="sort-option" data-sort="duration">Duration</div>
+                                    <div class="sort-option" data-sort="dateAdded">Date Added</div>
+                                </div>
+                            </div>
+                            <button id="add-folder-btn" class="btn-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                                    height="16">
+                                    <path d="M12 5v14M5 12h14" />
+                                </svg>
+                                Add Folder
+                            </button>
+                        </div>
                     </div>
                     <div id="loading-indicator" class="loading-bar hidden">
                         <div class="loading-fill"></div>
@@ -172,6 +221,81 @@
                     <p class="search-hint" id="search-hint">Start typing to search your library...</p>
                     <ul id="search-results" class="song-list hidden"></ul>
                 </div>
+
+                <!-- === VIEW: VIDEOS === -->
+                <div id="view-videos" class="view">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Videos</h1>
+                            <p class="view-subtitle" id="videos-count">0 videos</p>
+                        </div>
+                        <div class="sort-dropdown">
+                            <button id="videos-sort-btn" class="sort-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <path d="M3 6h18M7 12h10M11 18h6"/>
+                                </svg>
+                                <span id="videos-sort-label">Title</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-left: 4px;">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div id="videos-sort-menu" class="sort-menu hidden">
+                                <div class="sort-option" data-sort="title">Title (A-Z)</div>
+                                <div class="sort-option" data-sort="duration">Duration</div>
+                                <div class="sort-option" data-sort="dateAdded">Date Added</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="video-player-main" class="video-player-main hidden">
+                        <div class="video-player-header">
+                            <div class="video-title-container">
+                                <h3 id="current-video-title" class="video-player-title">Video Title</h3>
+                                <span id="video-quality-badge" class="video-quality-badge hidden"></span>
+                            </div>
+                            <div class="video-player-actions">
+                                <button id="prev-video-btn" class="video-action-btn" title="Previous Video">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                        <polygon points="11,19 2,12 11,5"/>
+                                        <polygon points="22,19 13,12 22,5"/>
+                                    </svg>
+                                </button>
+                                <button id="next-video-btn" class="video-action-btn" title="Next Video">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                        <polygon points="13,5 22,12 13,19"/>
+                                        <polygon points="2,5 11,12 2,19"/>
+                                    </svg>
+                                </button>
+                                <button id="load-subtitle-btn" class="video-action-btn" title="Load Subtitle File">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                                        <path d="M6 10h4M14 10h4M6 14h4M14 14h4"/>
+                                    </svg>
+                                    <span>CC</span>
+                                </button>
+                                <button id="close-video-player-btn" class="video-action-btn close-btn" title="Close Video">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                        <line x1="18" y1="6" x2="6" y2="18"/>
+                                        <line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="video-player-container-inner">
+                            <video id="main-video-player" controls>
+                                <!-- Subtitle tracks will be added dynamically -->
+                            </video>
+                        </div>
+                    </div>
+                    <ul id="videos-list" class="video-grid">
+                        <!-- Videos injected by JS -->
+                    </ul>
+                    <div id="videos-empty" class="empty-state hidden">
+                        <div class="empty-icon">🎬</div>
+                        <p>No videos found</p>
+                        <span>Add folders containing videos to see them here</span>
+                    </div>
+                </div>
+
 
                 <!-- === VIEW: PLAYLIST (single) === -->
                 <div id="view-playlist" class="view">
@@ -226,9 +350,27 @@
             </main>
         </div>
 
+        <!-- ===== VIDEO PLAYER (hidden by default) ===== -->
+        <div id="video-player-container" class="video-player-container hidden">
+            <div class="video-player-header">
+                <span class="video-player-title">Video Player</span>
+                <button id="close-video-btn" class="video-close-btn" title="Close video player">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <video id="video-player" controls></video>
+            <div class="video-player-overlay">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+            </div>
+        </div>
         <!-- ===== BOTTOM PLAYER BAR ===== -->
         <section class="playback-controls">
-            <!-- Now Playing Mini -->
+            <!-- Now Playing Mini with Enhanced Design -->
             <div class="now-playing-mini">
                 <div class="art-wrapper-mini">
                     <img id="track-art" src="" alt="Album Art" class="track-art hidden">
@@ -241,10 +383,12 @@
                             <div class="eq-bar"></div>
                         </div>
                     </div>
+                    <!-- Glow effect overlay -->
+                    <div class="art-glow"></div>
                 </div>
                 <div class="track-details-mini">
-                    <h4 id="track-title">SoundStorm</h4>
-                    <p id="track-artist">Add a folder to begin</p>
+                    <h4 id="track-title" class="track-title-animated">SoundStorm</h4>
+                    <p id="track-artist" class="track-artist-animated">Add a folder to begin</p>
                 </div>
                 <!-- Favorite toggle on player bar -->
                 <button id="player-fav-btn" class="ctrl-btn fav-btn" title="Add to Favorites">
@@ -255,10 +399,10 @@
                 </button>
             </div>
 
-            <!-- Center Controls -->
+            <!-- Center Controls with Enhanced Layout -->
             <div class="center-controls">
                 <div class="playback-btns">
-                    <button id="shuffle-btn" class="ctrl-btn" title="Shuffle">
+                    <button id="shuffle-btn" class="ctrl-btn ctrl-btn-secondary" title="Shuffle">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"
                             height="18">
                             <polyline points="16 3 21 3 21 8" />
@@ -267,7 +411,7 @@
                             <line x1="4" y1="4" x2="9" y2="9" />
                         </svg>
                     </button>
-                    <button id="prev-btn" class="ctrl-btn">
+                    <button id="prev-btn" class="ctrl-btn ctrl-btn-nav">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                         </svg>
@@ -279,13 +423,15 @@
                         <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" class="hidden">
                             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                         </svg>
+                        <!-- Ripple effect -->
+                        <span class="play-btn-ripple"></span>
                     </button>
-                    <button id="next-btn" class="ctrl-btn">
+                    <button id="next-btn" class="ctrl-btn ctrl-btn-nav">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
                         </svg>
                     </button>
-                    <button id="repeat-btn" class="ctrl-btn" title="Repeat">
+                    <button id="repeat-btn" class="ctrl-btn ctrl-btn-secondary" title="Repeat">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"
                             height="18">
                             <polyline points="17 1 21 5 17 9" />
@@ -296,29 +442,75 @@
                     </button>
                 </div>
                 <div class="progress-wrap-mini">
-                    <span id="time-current">0:00</span>
-                    <input type="range" id="seek-bar" class="custom-slider" value="0" min="0" max="100" step="0.1">
-                    <span id="time-total">0:00</span>
+                    <span id="time-current" class="time-display">0:00</span>
+                    <div class="seek-bar-container">
+                        <input type="range" id="seek-bar" class="custom-slider seek-slider" value="0" min="0" max="100" step="0.1">
+                        <div class="seek-bar-progress"></div>
+                        <div class="seek-bar-hover"></div>
+                    </div>
+                    <span id="time-total" class="time-display">0:00</span>
                 </div>
             </div>
 
-            <!-- Right Controls -->
+            <!-- Right Controls with Volume Visual -->
             <div class="side-controls right-side">
-                <button id="mute-btn" class="ctrl-btn" title="Mute">
-                    <svg id="vol-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        width="18" height="18">
-                        <path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" />
-                    </svg>
-                    <svg id="vol-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        width="18" height="18" class="hidden">
-                        <line x1="23" y1="9" x2="17" y2="15" />
-                        <line x1="17" y1="9" x2="23" y2="15" />
-                        <path d="M11 5L6 9H2v6h4l5 4V5z" />
+                <!-- EQ Toggle Button -->
+                <button id="eq-toggle-btn" class="ctrl-btn ctrl-btn-secondary" title="Sound EQ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <line x1="4" y1="21" x2="4" y2="14"/>
+                        <line x1="4" y1="10" x2="4" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12" y2="3"/>
+                        <line x1="20" y1="21" x2="20" y2="16"/>
+                        <line x1="20" y1="12" x2="20" y2="3"/>
+                        <line x1="1" y1="14" x2="7" y2="14"/>
+                        <line x1="9" y1="8" x2="15" y2="8"/>
+                        <line x1="17" y1="16" x2="23" y2="16"/>
                     </svg>
                 </button>
-                <input type="range" id="volume-bar" class="custom-slider vol-slider" value="100" min="0" max="100">
+                <div class="volume-controls">
+                    <button id="mute-btn" class="ctrl-btn" title="Mute/Unmute">
+                        <svg id="vol-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            width="18" height="18">
+                            <path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" />
+                        </svg>
+                        <svg id="vol-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            width="18" height="18" class="hidden">
+                            <line x1="23" y1="9" x2="17" y2="15" />
+                            <line x1="17" y1="9" x2="23" y2="15" />
+                            <path d="M11 5L6 9H2v6h4l5 4V5z" />
+                        </svg>
+                    </button>
+                    <div class="volume-slider-wrapper">
+                        <input type="range" id="volume-bar" class="custom-slider vol-slider" value="100" min="0" max="100">
+                        <div class="volume-bar-fill"></div>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- ===== FLOATING EQ PANEL ===== -->
+        <div id="eq-panel" class="eq-panel hidden">
+            <div class="eq-panel-header">
+                <span>Sound EQ</span>
+                <button id="eq-panel-close" class="ctrl-btn eq-panel-close-btn">×</button>
+            </div>
+            <div class="eq-panel-row">
+                <div class="eq-panel-label">
+                    <span>Bass</span>
+                    <span id="panel-bass-val" class="eq-panel-val">0 dB</span>
+                </div>
+                <input type="range" id="panel-bass-gain" class="custom-slider" min="-12" max="12" step="1" value="0">
+            </div>
+            <div class="eq-panel-row">
+                <div class="eq-panel-label">
+                    <span>Treble</span>
+                    <span id="panel-treble-val" class="eq-panel-val">0 dB</span>
+                </div>
+                <input type="range" id="panel-treble-gain" class="custom-slider" min="-12" max="12" step="1" value="0">
+            </div>
+            <button id="eq-panel-reset" class="btn-ghost eq-panel-reset-btn">Reset Sound</button>
+        </div>
 
         <!-- ===== CONTEXT MENU ===== -->
         <div id="context-menu" class="context-menu hidden">
@@ -328,6 +520,11 @@
             <div id="ctx-add-playlist" class="ctx-item">＋ Add to Playlist ▸</div>
             <div id="ctx-playlist-submenu" class="ctx-submenu hidden"></div>
             <div id="ctx-remove-playlist" class="ctx-item ctx-danger hidden">✕ Remove from Playlist</div>
+            <div class="ctx-separator"></div>
+            <div id="ctx-reveal" class="ctx-item">📁 Show in Folder</div>
+            <div id="ctx-rename" class="ctx-item">✎ Rename File</div>
+            <div class="ctx-separator"></div>
+            <div id="ctx-delete" class="ctx-item ctx-danger">🗑 Delete File</div>
         </div>
 
         <!-- ===== CREATE PLAYLIST MODAL ===== -->
@@ -346,6 +543,28 @@
                     <div class="form-footer">
                         <button id="cancel-create-playlist-btn" class="btn-ghost">Cancel</button>
                         <button id="confirm-create-playlist-btn" class="btn-primary">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== RENAME FILE MODAL ===== -->
+        <div id="rename-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Rename File</h2>
+                    <button id="close-rename-btn" class="ctrl-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:var(--text-dim); margin-bottom:10px; font-size:0.9rem;">This will rename the actual
+                        file on your disk.</p>
+                    <div class="form-group">
+                        <label class="form-label">New Filename</label>
+                        <input type="text" id="rename-input" class="form-input" placeholder="e.g. track_1">
+                    </div>
+                    <div class="form-footer">
+                        <button id="cancel-rename-btn" class="btn-ghost">Cancel</button>
+                        <button id="confirm-rename-btn" class="btn-primary">Rename</button>
                     </div>
                 </div>
             </div>
@@ -465,6 +684,27 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-category">
+                        <div class="setting-category-header">
+                            <h3>Sound</h3>
+                            <button id="reset-sound-btn" class="btn-ghost btn-xs">Reset</button>
+                        </div>
+                        <div class="setting-group">
+                            <div class="label-desc">
+                                <label for="bass-gain" class="setting-label">Bass <span id="bass-val">0 dB</span></label>
+                                <span class="setting-desc">Low frequency boost / cut</span>
+                            </div>
+                            <input type="range" id="bass-gain" class="custom-slider" min="-12" max="12" step="1" value="0" style="width: 120px;">
+                        </div>
+                        <div class="setting-group">
+                            <div class="label-desc">
+                                <label for="treble-gain" class="setting-label">Treble <span id="treble-val">0 dB</span></label>
+                                <span class="setting-desc">High frequency boost / cut</span>
+                            </div>
+                            <input type="range" id="treble-gain" class="custom-slider" min="-12" max="12" step="1" value="0" style="width: 120px;">
                         </div>
                     </div>
 
