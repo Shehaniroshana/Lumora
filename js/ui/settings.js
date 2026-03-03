@@ -10,7 +10,8 @@ import {
     settingsBtn, settingsModal, closeSettingsBtn, bgBlur, trackArt,
     bassGain, bassVal, trebleGain, trebleVal, resetSoundBtn,
     eqToggleBtn, eqPanel, eqPanelClose, panelBassGain, panelBassVal,
-    panelTrebleGain, panelTrebleVal, eqPanelReset
+    panelTrebleGain, panelTrebleVal, eqPanelReset,
+    checkUpdateBtn, updateStatus, updateProgress, updateProgressBar, updateProgressText
 } from './dom.js';
 import { state } from '../core/state.js';
 import { showToast as toast } from '../core/utils.js';
@@ -195,6 +196,95 @@ export function initSettings() {
         applyFont("'Outfit', sans-serif");
         toast('Settings reset to defaults');
     });
+
+    // Auto-updater
+    let updateDownloading = false;
+    
+    // Check if updater is available (only in production builds)
+    const updaterAvailable = window.electronAPI && window.electronAPI.updater;
+    
+    if (!updaterAvailable) {
+        updateStatus.textContent = 'Updates only available in production build';
+        checkUpdateBtn.disabled = true;
+    }
+    
+    checkUpdateBtn.addEventListener('click', async () => {
+        if (updateDownloading || !updaterAvailable) return;
+        
+        checkUpdateBtn.disabled = true;
+        updateStatus.textContent = 'Checking for updates...';
+        
+        try {
+            const result = await window.electronAPI.updater.checkForUpdates();
+            if (result && result.error) {
+                updateStatus.textContent = 'Updates not available in dev mode';
+                checkUpdateBtn.disabled = true;
+            }
+        } catch (error) {
+            updateStatus.textContent = 'Failed to check for updates';
+            checkUpdateBtn.disabled = false;
+        }
+    });
+
+    // Update event listeners (only if updater is available)
+    if (updaterAvailable) {
+        window.electronAPI.updater.onChecking(() => {
+            updateStatus.textContent = 'Checking for updates...';
+        });
+
+        window.electronAPI.updater.onAvailable((info) => {
+            updateStatus.textContent = `Update v${info.version} available!`;
+            checkUpdateBtn.textContent = 'Download Update';
+            checkUpdateBtn.disabled = false;
+            updateDownloading = false;
+            
+            // Change button to download mode
+            checkUpdateBtn.onclick = async () => {
+                checkUpdateBtn.disabled = true;
+                updateDownloading = true;
+                updateStatus.textContent = 'Starting download...';
+                await window.electronAPI.updater.downloadUpdate();
+            };
+        });
+
+        window.electronAPI.updater.onNotAvailable(() => {
+            updateStatus.textContent = 'You are on the latest version!';
+            checkUpdateBtn.disabled = false;
+            setTimeout(() => {
+                updateStatus.textContent = '';
+            }, 3000);
+        });
+
+        window.electronAPI.updater.onError((message) => {
+            updateStatus.textContent = `Error: ${message}`;
+            checkUpdateBtn.disabled = false;
+            updateDownloading = false;
+            setTimeout(() => {
+                updateStatus.textContent = '';
+            }, 5000);
+        });
+
+        window.electronAPI.updater.onDownloadProgress((progress) => {
+            updateProgress.classList.remove('hidden');
+            const percent = Math.round(progress.percent);
+            updateProgressBar.style.width = percent + '%';
+            updateProgressText.textContent = `Downloading: ${percent}% (${(progress.transferred / 1024 / 1024).toFixed(1)} MB / ${(progress.total / 1024 / 1024).toFixed(1)} MB)`;
+        });
+
+        window.electronAPI.updater.onDownloaded(() => {
+            updateProgress.classList.add('hidden');
+            updateStatus.textContent = 'Update downloaded! Restart to install.';
+            checkUpdateBtn.textContent = 'Restart & Install';
+            checkUpdateBtn.disabled = false;
+            updateDownloading = false;
+            
+            checkUpdateBtn.onclick = () => {
+                window.electronAPI.updater.installUpdate();
+            };
+            
+            toast('Update ready! Restart the app to install.');
+        });
+    }
 
     loadSettings();
 }

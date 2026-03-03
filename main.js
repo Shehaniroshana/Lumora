@@ -8,6 +8,58 @@ const Store = require('electron-store');
 // Initialize electron-store
 const store = new Store();
 
+// Auto-updater (only in production)
+const isDev = !app.isPackaged;
+let autoUpdater = null;
+let mainWindow;
+
+if (!isDev) {
+    try {
+        autoUpdater = require('electron-updater').autoUpdater;
+        autoUpdater.autoDownload = false;
+        autoUpdater.autoInstallOnAppQuit = true;
+
+        // Auto-updater event listeners
+        autoUpdater.on('checking-for-update', () => {
+            if (mainWindow) {
+                mainWindow.webContents.send('update:checking');
+            }
+        });
+
+        autoUpdater.on('update-available', (info) => {
+            if (mainWindow) {
+                mainWindow.webContents.send('update:available', info);
+            }
+        });
+
+        autoUpdater.on('update-not-available', (info) => {
+            if (mainWindow) {
+                mainWindow.webContents.send('update:not-available', info);
+            }
+        });
+
+        autoUpdater.on('error', (err) => {
+            if (mainWindow) {
+                mainWindow.webContents.send('update:error', err.message);
+            }
+        });
+
+        autoUpdater.on('download-progress', (progressObj) => {
+            if (mainWindow) {
+                mainWindow.webContents.send('update:download-progress', progressObj);
+            }
+        });
+
+        autoUpdater.on('update-downloaded', (info) => {
+            if (mainWindow) {
+                mainWindow.webContents.send('update:downloaded', info);
+            }
+        });
+    } catch (err) {
+        console.log('Auto-updater not available:', err.message);
+    }
+}
+
 // Suppress Linux/systemd dbus transient unit conflict warning
 app.commandLine.appendSwitch('disable-features', 'MediaSessionService');
 
@@ -18,7 +70,7 @@ app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('enable-zero-copy');
 
 const createWindow = () => {
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 1000,
         height: 700,
         minWidth: 800,
@@ -172,6 +224,38 @@ app.whenReady().then(() => {
 
     ipcMain.handle('store:clear', () => {
         store.clear();
+    });
+
+    // Auto-updater IPC handlers
+    ipcMain.handle('update:check', async () => {
+        if (!autoUpdater) {
+            return { error: 'Auto-updater not available in development mode' };
+        }
+        try {
+            return await autoUpdater.checkForUpdates();
+        } catch (error) {
+            console.error('Update check failed:', error);
+            return { error: error.message };
+        }
+    });
+
+    ipcMain.handle('update:download', async () => {
+        if (!autoUpdater) {
+            return { error: 'Auto-updater not available in development mode' };
+        }
+        try {
+            return await autoUpdater.downloadUpdate();
+        } catch (error) {
+            console.error('Update download failed:', error);
+            return { error: error.message };
+        }
+    });
+
+    ipcMain.handle('update:install', () => {
+        if (!autoUpdater) {
+            return { error: 'Auto-updater not available in development mode' };
+        }
+        autoUpdater.quitAndInstall();
     });
 
     createWindow();

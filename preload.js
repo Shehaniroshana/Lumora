@@ -20,5 +20,29 @@ contextBridge.exposeInMainWorld('electronAPI', {
         set: (key, value) => ipcRenderer.invoke('store:set', key, value),
         delete: (key) => ipcRenderer.invoke('store:delete', key),
         clear: () => ipcRenderer.invoke('store:clear')
+    },
+    // Auto-updater methods
+    updater: {
+        checkForUpdates: () => ipcRenderer.invoke('update:check'),
+        downloadUpdate: () => ipcRenderer.invoke('update:download'),
+        installUpdate: () => ipcRenderer.invoke('update:install'),
+        onChecking: (callback) => {
+            ipcRenderer.on('update:checking', callback);
+        },
+        onAvailable: (callback) => {
+            ipcRenderer.on('update:available', (event, info) => callback(info));
+        },
+        onNotAvailable: (callback) => {
+            ipcRenderer.on('update:not-available', (event, info) => callback(info));
+        },
+        onError: (callback) => {
+            ipcRenderer.on('update:error', (event, message) => callback(message));
+        },
+        onDownloadProgress: (callback) => {
+            ipcRenderer.on('update:download-progress', (event, progress) => callback(progress));
+        },
+        onDownloaded: (callback) => {
+            ipcRenderer.on('update:downloaded', (event, info) => callback(info));
+        }
     }
 });

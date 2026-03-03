@@ -748,6 +748,26 @@
                         </div>
                     </div>
 
+                    <div class="setting-category">
+                        <h3>App Updates</h3>
+                        <div class="setting-group" style="align-items: flex-start; flex-direction: column; gap: 12px;">
+                            <div class="label-desc" style="width: 100%;">
+                                <label class="setting-label">Check for Updates</label>
+                                <span class="setting-desc">Keep SoundStorm up to date with the latest features</span>
+                            </div>
+                            <div style="display: flex; gap: 8px; width: 100%; align-items: center;">
+                                <button id="check-update-btn" class="btn-primary" style="flex: 0 0 auto;">Check for Updates</button>
+                                <span id="update-status" style="font-size: 12px; color: var(--text-dim); flex: 1;"></span>
+                            </div>
+                            <div id="update-progress" class="hidden" style="width: 100%;">
+                                <div style="background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; overflow: hidden;">
+                                    <div id="update-progress-bar" style="background: var(--primary); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                                </div>
+                                <span id="update-progress-text" style="font-size: 11px; color: var(--text-dim); margin-top: 4px; display: block;"></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="setting-footer">
                         <button id="reset-settings-btn" class="btn-danger-ghost">Reset to Defaults</button>
                     </div>

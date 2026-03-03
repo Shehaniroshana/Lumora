@@ -149,3 +149,10 @@ export const videosSortMenu = document.getElementById('videos-sort-menu');
 export const prevVideoBtn = document.getElementById('prev-video-btn');
 export const nextVideoBtn = document.getElementById('next-video-btn');
 export const videoQualityBadge = document.getElementById('video-quality-badge');
+
+// Update elements
+export const checkUpdateBtn = document.getElementById('check-update-btn');
+export const updateStatus = document.getElementById('update-status');
+export const updateProgress = document.getElementById('update-progress');
+export const updateProgressBar = document.getElementById('update-progress-bar');
+export const updateProgressText = document.getElementById('update-progress-text');
