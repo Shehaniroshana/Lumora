@@ -78,12 +78,15 @@
 
 ### Latest Release: v1.0.0
 
-| Platform | Download |
-|----------|----------|
-| 🪟 **Windows** | [Installer (NSIS)](../../releases) • [Portable](../../releases) |
-| 🐧 **Linux** | [AppImage](../../releases) • [DEB Package](../../releases) |
+| Platform | Download | Auto-Update |
+|----------|----------|-------------|
+| 🪟 **Windows** | [Installer (NSIS)](../../releases) • [Portable](../../releases) | ✅ Yes |
+| 🐧 **Linux** | [AppImage](../../releases) (recommended) | ✅ Yes |
+| 🐧 **Linux** | [DEB Package](../../releases) | ❌ No |
 
 👉 **[View All Releases](../../releases)**
+
+> 💡 **Tip**: Use AppImage on Linux if you want automatic updates!
 
 ---
 
@@ -97,18 +100,21 @@
 3. Launch SoundStorm from Start Menu or Desktop shortcut
 
 #### Linux
-**AppImage (Recommended):**
+
+**AppImage (Recommended for Auto-Updates):**
 ```bash
-# Download the AppImage
+# Download the AppImage from releases
 chmod +x SoundStorm-*.AppImage
 ./SoundStorm-*.AppImage
 ```
+> ✅ **AppImage supports auto-updates!** Click "Check for Updates" in Settings to get new versions automatically.
 
 **Debian/Ubuntu (.deb):**
 ```bash
 sudo dpkg -i SoundStorm-*.deb
 sudo apt-get install -f  # Install dependencies
 ```
+> ⚠️ **.deb packages do NOT support auto-updates.** You'll need to manually download and install new versions. Use AppImage if you want automatic updates!
 
 ---
 
@@ -332,7 +338,9 @@ A: Not currently, but this is planned for future releases.
 A: No. Everything stays on your computer.
 
 **Q: How do I update the app?**  
-A: Go to Settings → Check for Updates. The app will notify you when updates are available.
+A: 
+- **Windows (.exe)** and **Linux (AppImage)**: Go to Settings → Check for Updates. The app will download and install updates automatically.
+- **Linux (.deb)**: Auto-updates are not supported. Download the latest .deb from [Releases](../../releases) and install it manually, or switch to AppImage for automatic updates.
 
 ---
 
