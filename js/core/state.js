@@ -3,6 +3,18 @@
 // Stores all global application state
 // ============================================================
 
+// Helper to get data from electron-store with fallback
+async function getStoreData(key, defaultValue) {
+    try {
+        const value = await window.electronAPI.store.get(key);
+        return value !== undefined ? value : defaultValue;
+    } catch (error) {
+        console.error(`Error reading store key ${key}:`, error);
+        return defaultValue;
+    }
+}
+
+// Initialize state - will be populated async on load
 export const state = {
     playlist: [], // full library (array of metadata objects)
     currentIndex: -1,
@@ -11,9 +23,9 @@ export const state = {
     repeatMode: 'none',   // 'none' | 'all' | 'one'
     isMuted: false,
 
-    favorites: JSON.parse(localStorage.getItem('soundstorm-favorites') || '[]'),
-    playlists: JSON.parse(localStorage.getItem('soundstorm-playlists') || '[]'),
-    scannedFolders: JSON.parse(localStorage.getItem('soundstorm-folders') || '[]'),
+    favorites: [],
+    playlists: [],
+    scannedFolders: [],
     currentWallpaperUri: null,
 
     currentView: 'library',
@@ -25,32 +37,39 @@ export const state = {
     videos: [], // detected video files
 };
 
+// Load state from electron-store
+export async function loadState() {
+    state.favorites = await getStoreData('favorites', []);
+    state.playlists = await getStoreData('playlists', []);
+    state.scannedFolders = await getStoreData('folders', []);
+}
+
 // ===================== Persistence Helpers =====================
-export function saveFavorites() {
-    localStorage.setItem('soundstorm-favorites', JSON.stringify(state.favorites));
+export async function saveFavorites() {
+    await window.electronAPI.store.set('favorites', state.favorites);
 }
 
-export function savePlaylists() {
-    localStorage.setItem('soundstorm-playlists', JSON.stringify(state.playlists));
+export async function savePlaylists() {
+    await window.electronAPI.store.set('playlists', state.playlists);
 }
 
-export function saveFolders() {
-    localStorage.setItem('soundstorm-folders', JSON.stringify(state.scannedFolders));
+export async function saveFolders() {
+    await window.electronAPI.store.set('folders', state.scannedFolders);
 }
 
-export function saveLastTrack(trackPath) {
-    localStorage.setItem('soundstorm-last-track', trackPath);
+export async function saveLastTrack(trackPath) {
+    await window.electronAPI.store.set('last-track', trackPath);
 }
 
-export function getLastTrack() {
-    return localStorage.getItem('soundstorm-last-track');
+export async function getLastTrack() {
+    return await getStoreData('last-track', null);
 }
 
-export function saveLastTrackTime(time) {
-    localStorage.setItem('soundstorm-last-track-time', time.toString());
+export async function saveLastTrackTime(time) {
+    await window.electronAPI.store.set('last-track-time', time);
 }
 
-export function getLastTrackTime() {
-    const time = localStorage.getItem('soundstorm-last-track-time');
-    return time ? parseFloat(time) : 0;
+export async function getLastTrackTime() {
+    const time = await getStoreData('last-track-time', 0);
+    return typeof time === 'number' ? time : 0;
 }

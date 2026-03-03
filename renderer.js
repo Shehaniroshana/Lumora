@@ -9,14 +9,17 @@
 
 
 
-import { addFolderBtn, addFolderBtn2, playlistEl, loadingIndicator, libraryCount, playbackControls, playPauseBtn, playIcon, pauseIcon, prevBtn, nextBtn, shuffleBtn, repeatBtn, seekBar, timeCurrent, timeTotal, volumeBar, muteBtn, volIconOn, volIconOff, trackTitle, trackArtist, trackArt, artPlaceholder, eqBars, bgBlur, playerFavBtn, favCountBadge, favCountText, favoritesList, favoritesEmpty, searchInput, searchResults, searchHint, playlistsNavList, newPlaylistBtn, folderList, settingsBtn, settingsModal, closeSettingsBtn, createPlaylistModal, closeCreatePlaylistBtn, cancelCreatePlaylistBtn, confirmCreatePlaylistBtn, newPlaylistNameInput, contextMenu, ctxPlay, ctxFav, ctxAddPlaylist, ctxPlaylistSubmenu, ctxRemovePlaylist, ctxReveal, ctxRename, ctxDelete, renameModal, closeRenameBtn, cancelRenameBtn, confirmRenameBtn, renameInput, deletePlaylistBtn, playlistViewName, playlistViewCount, playlistViewSongs, playlistEmpty, addSongsToPlaylistBtn, songPickerModal, closeSongPickerBtn, cancelSongPickerBtn, confirmSongPickerBtn, songPickerSearch, songPickerList, songPickerSelectedCount, toast, colorPicker, bgColorPicker, panelColorPicker, glassOpacity, opacityVal, blurIntensity, blurVal, fontSelect, resetSettingsBtn, bgImageBtn, clearBgImageBtn, fontDropdown, fontDropdownTrigger, fontDropdownMenu, fontDropdownLabel, canvas, mobileMenuBtn, sidebar, sidebarOverlay, videoPlayerContainer, videoPlayer, closeVideoBtn, videosList, videosCount, videosEmpty, videoCountBadge, videoPlayerMain, mainVideoPlayer, currentVideoTitle, loadSubtitleBtn, closeVideoPlayerBtn, librarySortBtn, librarySortLabel, librarySortMenu, videosSortBtn, videosSortLabel, videosSortMenu, prevVideoBtn, nextVideoBtn, videoQualityBadge } from './js/ui/dom.js';
-import { state, saveFavorites, savePlaylists, saveFolders, saveLastTrack, getLastTrack, saveLastTrackTime, getLastTrackTime } from './js/core/state.js';
+import { addFolderBtn, addFolderBtn2, refreshLibraryBtn, refreshVideosBtn, playlistEl, loadingIndicator, libraryCount, playbackControls, playPauseBtn, playIcon, pauseIcon, prevBtn, nextBtn, shuffleBtn, repeatBtn, seekBar, timeCurrent, timeTotal, volumeBar, muteBtn, volIconOn, volIconOff, trackTitle, trackArtist, trackArt, artPlaceholder, eqBars, bgBlur, playerFavBtn, favCountBadge, favCountText, favoritesList, favoritesEmpty, searchInput, librarySearch, favoritesSearch, videosSearch, searchResults, searchHint, playlistsNavList, newPlaylistBtn, folderList, settingsBtn, settingsModal, closeSettingsBtn, createPlaylistModal, closeCreatePlaylistBtn, cancelCreatePlaylistBtn, confirmCreatePlaylistBtn, newPlaylistNameInput, contextMenu, ctxPlay, ctxFav, ctxAddPlaylist, ctxPlaylistSubmenu, ctxRemovePlaylist, ctxReveal, ctxRename, ctxDelete, renameModal, closeRenameBtn, cancelRenameBtn, confirmRenameBtn, renameInput, renamePlaylistBtn, renamePlaylistModal, closeRenamePlaylistBtn, cancelRenamePlaylistBtn, confirmRenamePlaylistBtn, renamePlaylistInput, deletePlaylistBtn, playlistViewName, playlistViewCount, playlistViewSongs, playlistEmpty, addSongsToPlaylistBtn, songPickerModal, closeSongPickerBtn, cancelSongPickerBtn, confirmSongPickerBtn, songPickerSearch, songPickerList, songPickerSelectedCount, toast, colorPicker, bgColorPicker, panelColorPicker, glassOpacity, opacityVal, blurIntensity, blurVal, fontSelect, resetSettingsBtn, bgImageBtn, clearBgImageBtn, fontDropdown, fontDropdownTrigger, fontDropdownMenu, fontDropdownLabel, canvas, mobileMenuBtn, sidebar, sidebarOverlay, videoPlayerContainer, videoPlayer, closeVideoBtn, videosList, videosCount, videosEmpty, videoCountBadge, videoPlayerMain, mainVideoPlayer, currentVideoTitle, loadSubtitleBtn, closeVideoPlayerBtn, librarySortBtn, librarySortLabel, librarySortMenu, videosSortBtn, videosSortLabel, videosSortMenu, prevVideoBtn, nextVideoBtn, videoQualityBadge } from './js/ui/dom.js';
+import { state, loadState, saveFavorites, savePlaylists, saveFolders, saveLastTrack, getLastTrack, saveLastTrackTime, getLastTrackTime } from './js/core/state.js';
 import { escapeHtml, showToast, formatTime } from './js/core/utils.js';
 import { initSettings, setAppWallpaper } from './js/ui/settings.js';
 import { initAudio, playSong, togglePlay, nextSong, prevSong, audio } from './js/core/audio.js';
 import { initPlayerEnhancements, animateTrackChange, updateArtGlow } from './js/ui/player-enhancements.js';
 
-
+// Thumbnail generation queue to limit concurrent video loading
+let thumbnailQueue = [];
+let activeThumbnailGenerations = 0;
+const MAX_CONCURRENT_THUMBNAILS = 3;
 
 
 const canvasCtx = canvas.getContext('2d');
@@ -63,8 +66,12 @@ async function init() {
     // Show app loader
     const appLoader = document.getElementById('app-loader');
     
+    // Load state from electron-store first
+    await loadState();
+    
     // Critical path - do this first for fast initial render
     initSettings();
+    initSortUI();
     renderPlaylistsNav();
     renderFolderList();
     updateFavBadge();
@@ -96,7 +103,7 @@ async function init() {
             const defaultDirs = await electronAPI.getDefaultDirs();
             if (defaultDirs && defaultDirs.length > 0) {
                 state.scannedFolders = defaultDirs;
-                saveFolders();
+                await saveFolders();
                 renderFolderList();
                 showToast('🎵 Scanning your Music and Downloads folders...');
                 await scanFolders(defaultDirs);
@@ -104,7 +111,7 @@ async function init() {
         }
 
         // Restore last played track after initial render
-        restoreLastTrack();
+        await restoreLastTrack();
         
         // Hide app loader after everything is ready
         setTimeout(() => {
@@ -117,9 +124,9 @@ async function init() {
 init();
 
 // ===================== RESTORE LAST TRACK =====================
-function restoreLastTrack() {
-    const lastTrackPath = getLastTrack();
-    const lastTrackTime = getLastTrackTime();
+async function restoreLastTrack() {
+    const lastTrackPath = await getLastTrack();
+    const lastTrackTime = await getLastTrackTime();
     
     if (lastTrackPath && state.playlist.length > 0) {
         const trackIndex = state.playlist.findIndex(track => track.path === lastTrackPath);
@@ -171,6 +178,11 @@ function switchView(viewId, params = {}) {
     if (navItem) navItem.classList.add('active');
 
     state.currentView = viewId;
+
+    // Clear search inputs
+    librarySearch.value = '';
+    favoritesSearch.value = '';
+    videosSearch.value = '';
 
     if (viewId === 'favorites') renderFavoritesView();
     if (viewId === 'playlist' && params.id) openPlaylistView(params.id);
@@ -259,6 +271,21 @@ function updateSortLabel(label, sortBy) {
     label.textContent = labels[sortBy] || 'Title';
 }
 
+// Initialize sort UI on page load
+function initSortUI() {
+    // Update library sort label and menu
+    updateSortLabel(librarySortLabel, currentLibrarySort);
+    librarySortMenu.querySelectorAll('.sort-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.sort === currentLibrarySort);
+    });
+    
+    // Update videos sort label and menu
+    updateSortLabel(videosSortLabel, currentVideosSort);
+    videosSortMenu.querySelectorAll('.sort-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.sort === currentVideosSort);
+    });
+}
+
 // Library sort dropdown
 librarySortBtn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -317,8 +344,21 @@ async function doAddFolder() {
     }
 }
 
-addFolderBtn.addEventListener('click', doAddFolder);
 addFolderBtn2.addEventListener('click', doAddFolder);
+
+// Refresh library and videos
+async function refreshLibrary() {
+    if (state.scannedFolders.length === 0) {
+        showToast('No folders to scan. Add a folder first.');
+        return;
+    }
+    showToast('🔄 Refreshing library...');
+    await scanFolders(state.scannedFolders);
+    showToast('✓ Library refreshed!');
+}
+
+refreshLibraryBtn.addEventListener('click', refreshLibrary);
+refreshVideosBtn.addEventListener('click', refreshLibrary);
 
 function renderFolderList() {
     folderList.innerHTML = '';
@@ -359,19 +399,16 @@ async function scanFolders(dirs) {
             if (!state.playlist.find(item => item.path === file)) {
                 const metadata = await electronAPI.parseMetadata(file);
                 state.playlist.push(metadata);
-                // Only render if it's audio and we're on library view
-                if (!isVideoFile(file) && state.currentView === 'library') {
-                    const originalIndex = state.playlist.indexOf(metadata);
-                    renderSongRow(metadata, originalIndex, playlistEl);
-                }
             }
         }
         updateLibraryCount();
         updateVideoCount();
         loadingIndicator.classList.add('hidden');
         
-        // Update videos view if currently viewing
-        if (state.currentView === 'videos') {
+        // Re-render views with proper sorting after scan completes
+        if (state.currentView === 'library') {
+            renderLibraryView();
+        } else if (state.currentView === 'videos') {
             renderVideosView();
         }
     });
@@ -385,20 +422,21 @@ function updateLibraryCount() {
 function updateVideoCount() {
     const videoCount = state.playlist.filter(item => isVideoFile(item.path)).length;
     videosCount.textContent = `${videoCount} video${videoCount !== 1 ? 's' : ''}`;
-    
-    // Update badge
-    if (videoCount > 0) {
-        videoCountBadge.textContent = videoCount;
-        videoCountBadge.classList.remove('hidden');
-    } else {
-        videoCountBadge.classList.add('hidden');
-    }
 }
 
-function renderLibraryView() {
+function renderLibraryView(searchTerm = '') {
     playlistEl.innerHTML = '';
     // Filter out videos - only show audio files in library
-    const audioFiles = state.playlist.filter(item => !isVideoFile(item.path));
+    let audioFiles = state.playlist.filter(item => !isVideoFile(item.path));
+    
+    // Apply search filter if term is provided
+    if (searchTerm) {
+        audioFiles = audioFiles.filter(item =>
+            item.title.toLowerCase().includes(searchTerm) ||
+            item.artist.toLowerCase().includes(searchTerm) ||
+            (item.album && item.album.toLowerCase().includes(searchTerm))
+        );
+    }
     
     // Sort audio files
     const sorted = sortItems(audioFiles, currentLibrarySort);
@@ -583,12 +621,21 @@ function updatePlayerFavIcon(path) {
     playerFavBtn.title = isFav ? 'Remove from Favorites' : 'Add to Favorites';
 }
 
-function renderFavoritesView() {
+function renderFavoritesView(searchTerm = '') {
     favoritesList.innerHTML = '';
     // state.favorites is a list of file paths; find matching songs in library
-    const favSongs = state.favorites
+    let favSongs = state.favorites
         .map(path => state.playlist.find(s => s.path === path))
         .filter(Boolean);  // ignore any saved paths no longer in library
+
+    // Apply search filter if term is provided
+    if (searchTerm) {
+        favSongs = favSongs.filter(item =>
+            item.title.toLowerCase().includes(searchTerm) ||
+            item.artist.toLowerCase().includes(searchTerm) ||
+            (item.album && item.album.toLowerCase().includes(searchTerm))
+        );
+    }
 
     if (favSongs.length === 0) {
         favoritesEmpty.classList.remove('hidden');
@@ -635,9 +682,17 @@ function renderFavoritesView() {
 }
 
 // ===================== VIDEOS VIEW =====================
-function renderVideosView() {
+function renderVideosView(searchTerm = '') {
     videosList.innerHTML = '';
-    const videoFiles = state.playlist.filter(item => isVideoFile(item.path));
+    let videoFiles = state.playlist.filter(item => isVideoFile(item.path));
+    
+    // Apply search filter if term is provided
+    if (searchTerm) {
+        videoFiles = videoFiles.filter(item =>
+            item.title.toLowerCase().includes(searchTerm) ||
+            (item.artist && item.artist.toLowerCase().includes(searchTerm))
+        );
+    }
     
     updateVideoCount();
     
@@ -685,11 +740,6 @@ function renderVideosView() {
         opt.classList.toggle('selected', opt.dataset.sort === currentVideosSort);
     });
 }
-
-// Thumbnail generation queue to limit concurrent video loading
-let thumbnailQueue = [];
-let activeThumbnailGenerations = 0;
-const MAX_CONCURRENT_THUMBNAILS = 3;
 
 function processThumbnailQueue() {
     while (thumbnailQueue.length > 0 && activeThumbnailGenerations < MAX_CONCURRENT_THUMBNAILS) {
@@ -1241,17 +1291,57 @@ newPlaylistNameInput.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') createPlaylistModal.classList.add('hidden');
 });
 
-deletePlaylistBtn.addEventListener('click', () => {
+deletePlaylistBtn.addEventListener('click', async () => {
     if (!state.activePlaylistId) return;
     const pl = state.playlists.find(p => p.id === state.activePlaylistId);
     if (!pl) return;
-    if (!confirm(`Delete state.playlist "${pl.name}"?`)) return;
+    if (!confirm(`Delete playlist "${pl.name}"?`)) return;
     state.playlists = state.playlists.filter(p => p.id !== state.activePlaylistId);
-    savePlaylists();
+    await savePlaylists();
     renderPlaylistsNav();
     state.activePlaylistId = null;
     switchView('library');
     showToast('Playlist deleted');
+});
+
+// Rename Playlist
+renamePlaylistBtn.addEventListener('click', () => {
+    if (!state.activePlaylistId) return;
+    const pl = state.playlists.find(p => p.id === state.activePlaylistId);
+    if (!pl) return;
+    renamePlaylistInput.value = pl.name;
+    renamePlaylistModal.classList.remove('hidden');
+    setTimeout(() => renamePlaylistInput.select(), 100);
+});
+
+closeRenamePlaylistBtn.addEventListener('click', () => {
+    renamePlaylistModal.classList.add('hidden');
+});
+
+cancelRenamePlaylistBtn.addEventListener('click', () => {
+    renamePlaylistModal.classList.add('hidden');
+});
+
+confirmRenamePlaylistBtn.addEventListener('click', async () => {
+    if (!state.activePlaylistId) return;
+    const newName = renamePlaylistInput.value.trim();
+    if (!newName) {
+        showToast('Playlist name cannot be empty');
+        return;
+    }
+    const pl = state.playlists.find(p => p.id === state.activePlaylistId);
+    if (!pl) return;
+    pl.name = newName;
+    await savePlaylists();
+    renderPlaylistsNav();
+    openPlaylistView(state.activePlaylistId);
+    renamePlaylistModal.classList.add('hidden');
+    showToast('Playlist renamed');
+});
+
+renamePlaylistInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') confirmRenamePlaylistBtn.click();
+    if (e.key === 'Escape') renamePlaylistModal.classList.add('hidden');
 });
 
 // ===================== CONTEXT MENU =====================
@@ -1274,6 +1364,16 @@ function showContextMenu(e, index, fromPlaylistId = null) {
     // Show "Remove from Playlist" only when right-clicking inside a state.playlist
     const inPlaylist = !!fromPlaylistId;
     ctxRemovePlaylist.classList.toggle('hidden', !inPlaylist);
+    
+    // Show song-specific options
+    ctxPlay.classList.remove('hidden');
+    ctxFav.classList.remove('hidden');
+    ctxAddPlaylist.classList.remove('hidden');
+    
+    // Show file operations
+    ctxReveal.classList.remove('hidden');
+    ctxRename.classList.remove('hidden');
+    ctxDelete.classList.remove('hidden');
 }
 
 document.addEventListener('click', () => {
@@ -1591,6 +1691,25 @@ document.querySelectorAll('.nav-item[data-view]').forEach(item => {
             searchResults.innerHTML = '';
         }
     });
+});
+
+// ===================== INLINE SEARCH FOR VIEWS =====================
+// Library search
+librarySearch.addEventListener('input', () => {
+    const term = librarySearch.value.trim().toLowerCase();
+    renderLibraryView(term);
+});
+
+// Favorites search
+favoritesSearch.addEventListener('input', () => {
+    const term = favoritesSearch.value.trim().toLowerCase();
+    renderFavoritesView(term);
+});
+
+// Videos search
+videosSearch.addEventListener('input', () => {
+    const term = videosSearch.value.trim().toLowerCase();
+    renderVideosView(term);
 });
 
 

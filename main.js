@@ -3,6 +3,10 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const scanner = require('./utils/scanner');
 const metadataParser = require('./utils/metadata');
+const Store = require('electron-store');
+
+// Initialize electron-store
+const store = new Store();
 
 // Suppress Linux/systemd dbus transient unit conflict warning
 app.commandLine.appendSwitch('disable-features', 'MediaSessionService');
@@ -151,6 +155,23 @@ app.whenReady().then(() => {
 
     ipcMain.handle('fs:reveal', async (event, filePath) => {
         shell.showItemInFolder(filePath);
+    });
+
+    // electron-store IPC handlers
+    ipcMain.handle('store:get', (event, key) => {
+        return store.get(key);
+    });
+
+    ipcMain.handle('store:set', (event, key, value) => {
+        store.set(key, value);
+    });
+
+    ipcMain.handle('store:delete', (event, key) => {
+        store.delete(key);
+    });
+
+    ipcMain.handle('store:clear', () => {
+        store.clear();
     });
 
     createWindow();

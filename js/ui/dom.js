@@ -1,5 +1,7 @@
 export const addFolderBtn = document.getElementById('add-folder-btn');
 export const addFolderBtn2 = document.getElementById('add-folder-btn-2');
+export const refreshLibraryBtn = document.getElementById('refresh-library-btn');
+export const refreshVideosBtn = document.getElementById('refresh-videos-btn');
 export const playlistEl = document.getElementById('playlist');
 export const loadingIndicator = document.getElementById('loading-indicator');
 export const libraryCount = document.getElementById('library-count');
@@ -32,6 +34,9 @@ export const favCountText = document.getElementById('fav-count-text');
 export const favoritesList = document.getElementById('favorites-list');
 export const favoritesEmpty = document.getElementById('favorites-empty');
 export const searchInput = document.getElementById('search-input');
+export const librarySearch = document.getElementById('library-search');
+export const favoritesSearch = document.getElementById('favorites-search');
+export const videosSearch = document.getElementById('videos-search');
 export const searchResults = document.getElementById('search-results');
 export const searchHint = document.getElementById('search-hint');
 export const playlistsNavList = document.getElementById('playlists-nav-list');
@@ -71,6 +76,14 @@ export const closeRenameBtn = document.getElementById('close-rename-btn');
 export const cancelRenameBtn = document.getElementById('cancel-rename-btn');
 export const confirmRenameBtn = document.getElementById('confirm-rename-btn');
 export const renameInput = document.getElementById('rename-input');
+
+// Rename Playlist Modal
+export const renamePlaylistBtn = document.getElementById('rename-playlist-btn');
+export const renamePlaylistModal = document.getElementById('rename-playlist-modal');
+export const closeRenamePlaylistBtn = document.getElementById('close-rename-playlist-btn');
+export const cancelRenamePlaylistBtn = document.getElementById('cancel-rename-playlist-btn');
+export const confirmRenamePlaylistBtn = document.getElementById('confirm-rename-playlist-btn');
+export const renamePlaylistInput = document.getElementById('rename-playlist-input');
 export const songPickerSearch = document.getElementById('song-picker-search');
 export const songPickerList = document.getElementById('song-picker-list');
 export const songPickerSelectedCount = document.getElementById('song-picker-selected-count');

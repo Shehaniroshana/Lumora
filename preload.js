@@ -13,5 +13,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getFileUri: (filePath) => `file://${filePath}`,
     renameFile: (oldPath, newName) => ipcRenderer.invoke('fs:rename', oldPath, newName),
     revealInFolder: (filePath) => ipcRenderer.invoke('fs:reveal', filePath),
-    deleteFile: (filePath) => ipcRenderer.invoke('fs:delete', filePath)
+    deleteFile: (filePath) => ipcRenderer.invoke('fs:delete', filePath),
+    // electron-store methods
+    store: {
+        get: (key) => ipcRenderer.invoke('store:get', key),
+        set: (key, value) => ipcRenderer.invoke('store:set', key, value),
+        delete: (key) => ipcRenderer.invoke('store:delete', key),
+        clear: () => ipcRenderer.invoke('store:clear')
+    }
 });
