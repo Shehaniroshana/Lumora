@@ -2242,6 +2242,19 @@ button.play-btn:active .play-btn-ripple {
     font-size: 0.78rem;
     padding: 6px 0;
     text-align: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+.eq-panel-reset-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    border-color: var(--border-hover);
+}
+.eq-panel-reset-btn:active {
+    transform: scale(0.98);
 }
 #eq-toggle-btn.active-mode {
     color: var(--primary);
