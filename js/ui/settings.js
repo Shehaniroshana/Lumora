@@ -234,22 +234,38 @@ export function initSettings() {
 
         window.electronAPI.updater.onAvailable((info) => {
             updateStatus.textContent = `Update v${info.version} available!`;
-            checkUpdateBtn.textContent = 'Download Update';
             checkUpdateBtn.disabled = false;
             updateDownloading = false;
             
-            // Change button to download mode
-            checkUpdateBtn.onclick = async () => {
+            // Show alert with update details
+            const releaseNotes = info.releaseNotes || 'No release notes available';
+            const releaseDate = info.releaseDate ? new Date(info.releaseDate).toLocaleDateString() : 'N/A';
+            const message = `A new update is available!\n\nVersion: ${info.version}\nRelease Date: ${releaseDate}\n\nRelease Notes:\n${releaseNotes}\n\nWould you like to download and install this update?`;
+            
+            if (confirm(message)) {
+                // User wants to install
                 checkUpdateBtn.disabled = true;
                 updateDownloading = true;
                 updateStatus.textContent = 'Starting download...';
-                await window.electronAPI.updater.downloadUpdate();
-            };
+                window.electronAPI.updater.downloadUpdate();
+            } else {
+                // User chose to ignore
+                updateStatus.textContent = 'Update ignored. You can check again later.';
+                checkUpdateBtn.textContent = 'Check for Updates';
+                checkUpdateBtn.disabled = false;
+                setTimeout(() => {
+                    updateStatus.textContent = '';
+                }, 3000);
+            }
         });
 
         window.electronAPI.updater.onNotAvailable(() => {
             updateStatus.textContent = 'You are on the latest version!';
             checkUpdateBtn.disabled = false;
+            
+            // Show alert for no updates
+            alert('No new updates available.\n\nYou are already running the latest version of the application.');
+            
             setTimeout(() => {
                 updateStatus.textContent = '';
             }, 3000);
