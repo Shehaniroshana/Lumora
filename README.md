@@ -17,11 +17,6 @@
 
 </div>
 
-## 📸 Screenshots
-
-<!-- Add your screenshots here -->
-> *Coming soon - App screenshots showcasing the beautiful interface*
-
 ---
 
 ## ✨ Features
