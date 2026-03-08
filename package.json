@@ -1,7 +1,7 @@
 {
-    "name": "soundstorm",
-    "version": "1.0.0",
-    "description": "SoundStorm — A beautiful, open-source desktop MP3 player built with Electron",
+    "name": "lumora",
+    "version": "1.1.0",
+    "description": "Lumora — A beautiful, open-source desktop MP3 player built with Electron",
     "main": "main.js",
     "icon": "assets/new.png",
     "author": {
@@ -12,11 +12,11 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Shehaniroshana/SoundStorm.git"
+        "url": "https://github.com/Shehaniroshana/Lumora.git"
     },
-    "homepage": "https://github.com/Shehaniroshana/SoundStorm#readme",
+    "homepage": "https://github.com/Shehaniroshana/Lumora#readme",
     "bugs": {
-        "url": "https://github.com/Shehaniroshana/SoundStorm/issues"
+        "url": "https://github.com/Shehaniroshana/Lumora/issues"
     },
     "keywords": [
         "mp3-player",
@@ -24,7 +24,7 @@
         "audio-player",
         "electron",
         "desktop-app",
-        "soundstorm",
+        "lumora",
         "media-player",
         "music",
         "audio",
@@ -36,7 +36,9 @@
         "build:linux": "electron-builder --linux",
         "build:win": "electron-builder --win",
         "build:all": "electron-builder -wl",
-        "publish": "electron-builder --publish always"
+        "publish": "electron-builder --publish always",
+        "test": "jest --verbose",
+        "test:watch": "jest --watch --verbose"
     },
     "dependencies": {
         "electron-store": "^8.2.0",
@@ -47,16 +49,17 @@
     "devDependencies": {
         "electron": "^40.6.1",
         "electron-builder": "^26.8.1",
+        "jest": "^30.2.0",
         "sharp": "^0.34.5"
     },
     "build": {
-        "appId": "com.soundstorm.player",
-        "productName": "SoundStorm",
+        "appId": "com.lumora.player",
+        "productName": "Lumora",
         "publish": [
             {
                 "provider": "github",
                 "owner": "Shehaniroshana",
-                "repo": "SoundStorm"
+                "repo": "Lumora"
             }
         ],
         "linux": {

@@ -1,9 +1,35 @@
 # Changelog
 
-All notable changes to SoundStorm will be documented in this file.
+All notable changes to Lumora will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] - 2026-03-08
+
+### ✨ New Features
+
+**Multi-Select & Bulk Actions:**
+- Right-click "Select" and "Select All" options in context menu
+- Bulk action context menu when items are selected (Play All, Add to Favorites, Add to Playlist, Delete)
+- "Add to Playlist" button on selection toolbars for library & favorites
+- Smarter context menu that switches between single-item and bulk modes
+
+**Advanced Sorting & Play-by-Order:**
+- New sort options: Genre, File Name, Random
+- Ascending/Descending direction toggle for all sort options
+- Next/Previous now follows the visible sort order
+- Sort preferences persist across sessions
+
+**Weekly Listening Report:**
+- Automatic play history tracking for every song played
+- Weekly report auto-shows after 7 days with listening data
+- Summary cards: Songs Played, Listening Time, Unique Songs, Artists
+- Top 5 Most Played Songs, Top Artists, Top Genres rankings
+- 7-day daily activity bar chart
+- Play history auto-cleanup (6 months retention)
+
+---
 
 ## [1.0.0] - 2026-03-03
 
@@ -104,4 +130,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[1.0.0]: https://github.com/Shehaniroshana/SoundStorm/releases/tag/v1.0.0
+[1.0.0]: https://github.com/Shehaniroshana/Lumora/releases/tag/v1.0.0

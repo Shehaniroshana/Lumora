@@ -1,5 +1,5 @@
 // ============================================================
-// SOUNDSTORM MUSIC PLAYER — state.js
+// LUMORA MUSIC PLAYER — state.js
 // Stores all global application state
 // ============================================================
 
@@ -35,6 +35,10 @@ export const state = {
 
     playQueueContext: [],         // array of global indices representing the current playback queue
     videos: [], // detected video files
+
+    // ---- Multi-select state (in-memory only, never persisted) ----
+    selectedItems: new Set(),     // Set of file paths currently selected
+    selectionMode: false,         // whether selection mode is active
 };
 
 // Load state from electron-store
@@ -72,4 +76,40 @@ export async function saveLastTrackTime(time) {
 export async function getLastTrackTime() {
     const time = await getStoreData('last-track-time', 0);
     return typeof time === 'number' ? time : 0;
+}
+
+// ===================== Play History / Weekly Report =====================
+
+/**
+ * Record a song play event.
+ * Each entry: { path, title, artist, genre, duration, timestamp }
+ */
+export async function recordPlay(song) {
+    const history = await getStoreData('play-history', []);
+    history.push({
+        path: song.path,
+        title: song.title || 'Unknown',
+        artist: song.artist || 'Unknown Artist',
+        genre: song.genre || 'Unknown',
+        duration: song.duration || 0,
+        timestamp: Date.now()
+    });
+
+    // Keep max 6 months of history (~26 weeks) to avoid unbounded growth
+    const sixMonthsAgo = Date.now() - (180 * 24 * 60 * 60 * 1000);
+    const trimmed = history.filter(e => e.timestamp >= sixMonthsAgo);
+
+    await window.electronAPI.store.set('play-history', trimmed);
+}
+
+export async function getPlayHistory() {
+    return await getStoreData('play-history', []);
+}
+
+export async function getLastReportDate() {
+    return await getStoreData('last-report-date', 0);
+}
+
+export async function saveLastReportDate(timestamp) {
+    await window.electronAPI.store.set('last-report-date', timestamp);
 }

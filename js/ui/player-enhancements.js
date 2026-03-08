@@ -1,5 +1,5 @@
 // ============================================================
-// SOUNDSTORM MUSIC PLAYER — player-enhancements.js
+// LUMORA MUSIC PLAYER — player-enhancements.js
 // Enhanced player UI interactions and visual feedback
 // ============================================================
 

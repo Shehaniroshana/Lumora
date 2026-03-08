@@ -1,5 +1,5 @@
 // ============================================================
-// SOUNDSTORM MUSIC PLAYER — settings.js
+// LUMORA MUSIC PLAYER — settings.js
 // Handles app configuration, theming, and persistence
 // ============================================================
 
@@ -30,29 +30,29 @@ export function initSettings() {
     // Color Pickers
     colorPicker.addEventListener('input', (e) => {
         document.documentElement.style.setProperty('--primary', e.target.value);
-        localStorage.setItem('soundstorm-accent-color', e.target.value);
+        localStorage.setItem('lumora-accent-color', e.target.value);
     });
 
     bgColorPicker.addEventListener('input', (e) => {
         document.documentElement.style.setProperty('--bg-base', e.target.value);
-        localStorage.setItem('soundstorm-bg-color', e.target.value);
+        localStorage.setItem('lumora-bg-color', e.target.value);
     });
 
     panelColorPicker.addEventListener('input', (e) => {
-        localStorage.setItem('soundstorm-panel-color', e.target.value);
+        localStorage.setItem('lumora-panel-color', e.target.value);
         updatePanelGlass(e.target.value, glassOpacity.value);
     });
 
     // Glass & Blur
     glassOpacity.addEventListener('input', (e) => {
         opacityVal.textContent = e.target.value + '%';
-        localStorage.setItem('soundstorm-glass-opacity', e.target.value);
+        localStorage.setItem('lumora-glass-opacity', e.target.value);
         updatePanelGlass(panelColorPicker.value, e.target.value);
     });
 
     blurIntensity.addEventListener('input', (e) => {
         blurVal.textContent = e.target.value + 'px';
-        localStorage.setItem('soundstorm-blur-intensity', e.target.value);
+        localStorage.setItem('lumora-blur-intensity', e.target.value);
         applyBlur(e.target.value);
     });
 
@@ -83,19 +83,19 @@ export function initSettings() {
         if (path) {
             const uri = window.electronAPI.getFileUri(path);
             setAppWallpaper(uri);
-            localStorage.setItem('soundstorm-bg-image', uri);
+            localStorage.setItem('lumora-bg-image', uri);
 
             // Auto-lower blur
             blurIntensity.value = 10;
             blurVal.textContent = '10px';
-            localStorage.setItem('soundstorm-blur-intensity', '10');
+            localStorage.setItem('lumora-blur-intensity', '10');
             applyBlur(10);
         }
     });
 
     clearBgImageBtn.addEventListener('click', () => {
         setAppWallpaper(null);
-        localStorage.removeItem('soundstorm-bg-image');
+        localStorage.removeItem('lumora-bg-image');
     });
 
     // Bass
@@ -103,7 +103,7 @@ export function initSettings() {
         const db = parseInt(e.target.value);
         bassVal.textContent = (db >= 0 ? '+' : '') + db + ' dB';
         setBassGain(db);
-        localStorage.setItem('soundstorm-bass', db);
+        localStorage.setItem('lumora-bass', db);
     });
 
     // Treble
@@ -111,7 +111,7 @@ export function initSettings() {
         const db = parseInt(e.target.value);
         trebleVal.textContent = (db >= 0 ? '+' : '') + db + ' dB';
         setTrebleGain(db);
-        localStorage.setItem('soundstorm-treble', db);
+        localStorage.setItem('lumora-treble', db);
         syncPanel();
     });
 
@@ -151,7 +151,7 @@ export function initSettings() {
         const db = parseInt(e.target.value);
         panelBassVal.textContent = (db >= 0 ? '+' : '') + db + ' dB';
         setBassGain(db);
-        localStorage.setItem('soundstorm-bass', db);
+        localStorage.setItem('lumora-bass', db);
         bassGain.value = db;
         bassVal.textContent = panelBassVal.textContent;
     });
@@ -160,7 +160,7 @@ export function initSettings() {
         const db = parseInt(e.target.value);
         panelTrebleVal.textContent = (db >= 0 ? '+' : '') + db + ' dB';
         setTrebleGain(db);
-        localStorage.setItem('soundstorm-treble', db);
+        localStorage.setItem('lumora-treble', db);
         trebleGain.value = db;
         trebleVal.textContent = panelTrebleVal.textContent;
     });
@@ -169,7 +169,7 @@ export function initSettings() {
 
     // Reset
     resetSettingsBtn.addEventListener('click', () => {
-        ['soundstorm-accent-color', 'soundstorm-bg-color', 'soundstorm-panel-color', 'soundstorm-glass-opacity', 'soundstorm-font', 'soundstorm-bg-image', 'soundstorm-blur-intensity', 'soundstorm-bass', 'soundstorm-treble'].forEach(k => localStorage.removeItem(k));
+        ['lumora-accent-color', 'lumora-bg-color', 'lumora-panel-color', 'lumora-glass-opacity', 'lumora-font', 'lumora-bg-image', 'lumora-blur-intensity', 'lumora-bass', 'lumora-treble'].forEach(k => localStorage.removeItem(k));
 
         document.documentElement.style.setProperty('--primary', '#06c650');
         document.documentElement.style.setProperty('--bg-base', '#042d01');
@@ -190,8 +190,8 @@ export function initSettings() {
         bassGain.value = 0;  bassVal.textContent = '0 dB';
         trebleGain.value = 0; trebleVal.textContent = '0 dB';
         setBassGain(0); setTrebleGain(0);
-        localStorage.removeItem('soundstorm-bass');
-        localStorage.removeItem('soundstorm-treble');
+        localStorage.removeItem('lumora-bass');
+        localStorage.removeItem('lumora-treble');
         syncPanel();
         applyFont("'Outfit', sans-serif");
         toast('Settings reset to defaults');
@@ -315,8 +315,8 @@ function syncPanel() {
 }
 
 function applyResetSound() {
-    localStorage.removeItem('soundstorm-bass');
-    localStorage.removeItem('soundstorm-treble');
+    localStorage.removeItem('lumora-bass');
+    localStorage.removeItem('lumora-treble');
     bassGain.value = 0;  bassVal.textContent = '0 dB';
     trebleGain.value = 0; trebleVal.textContent = '0 dB';
     setBassGain(0);
@@ -326,34 +326,34 @@ function applyResetSound() {
 }
 
 export function loadSettings() {
-    const savedColor = localStorage.getItem('soundstorm-accent-color');
+    const savedColor = localStorage.getItem('lumora-accent-color');
     if (savedColor) {
         document.documentElement.style.setProperty('--primary', savedColor);
         colorPicker.value = savedColor;
     }
 
-    const savedBg = localStorage.getItem('soundstorm-bg-color');
+    const savedBg = localStorage.getItem('lumora-bg-color');
     if (savedBg) {
         document.documentElement.style.setProperty('--bg-base', savedBg);
         bgColorPicker.value = savedBg;
     }
 
-    const savedPanel = localStorage.getItem('soundstorm-panel-color');
-    const savedOpacity = localStorage.getItem('soundstorm-glass-opacity') || '13';
+    const savedPanel = localStorage.getItem('lumora-panel-color');
+    const savedOpacity = localStorage.getItem('lumora-glass-opacity') || '13';
     if (savedPanel) panelColorPicker.value = savedPanel;
     glassOpacity.value = savedOpacity;
     opacityVal.textContent = savedOpacity + '%';
     updatePanelGlass(savedPanel || '#033014', savedOpacity);
 
-    const savedFont = localStorage.getItem('soundstorm-font') || "'Outfit', sans-serif";
+    const savedFont = localStorage.getItem('lumora-font') || "'Outfit', sans-serif";
     applyFont(savedFont);
 
-    const savedBlur = localStorage.getItem('soundstorm-blur-intensity') || '13';
+    const savedBlur = localStorage.getItem('lumora-blur-intensity') || '13';
     blurIntensity.value = savedBlur;
     blurVal.textContent = savedBlur + 'px';
     applyBlur(savedBlur);
 
-    const savedWallpaper = localStorage.getItem('soundstorm-bg-image');
+    const savedWallpaper = localStorage.getItem('lumora-bg-image');
     if (savedWallpaper) {
         setAppWallpaper(savedWallpaper);
     } else {
@@ -362,11 +362,11 @@ export function loadSettings() {
     }
 
     // Load sound settings
-    const savedBass = parseInt(localStorage.getItem('soundstorm-bass') || '0');
+    const savedBass = parseInt(localStorage.getItem('lumora-bass') || '0');
     bassGain.value = savedBass;
     bassVal.textContent = (savedBass >= 0 ? '+' : '') + savedBass + ' dB';
 
-    const savedTreble = parseInt(localStorage.getItem('soundstorm-treble') || '0');
+    const savedTreble = parseInt(localStorage.getItem('lumora-treble') || '0');
     trebleGain.value = savedTreble;
     trebleVal.textContent = (savedTreble >= 0 ? '+' : '') + savedTreble + ' dB';
     syncPanel();
@@ -407,7 +407,7 @@ export function applyBlur(px) {
 export function applyFont(val) {
     currentFontValue = val;
     document.body.style.fontFamily = val;
-    localStorage.setItem('soundstorm-font', val);
+    localStorage.setItem('lumora-font', val);
 
     const items = Array.from(fontDropdownMenu.querySelectorAll('.custom-dropdown-item'));
     const matched = items.find(el => el.dataset.value === val);

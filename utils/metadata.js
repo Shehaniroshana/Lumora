@@ -19,10 +19,14 @@ async function parse(filePath) {
             pictureBase64 = `data:${pic.format};base64,${Buffer.from(pic.data).toString('base64')}`;
         }
 
+        const fileName = path.basename(filePath);
+        const extension = path.extname(filePath).toLowerCase();
+        const isVideo = /\.(mp4|webm|mkv|mov|avi)$/i.test(extension);
+
         return {
-            title: metadata.common.title || path.basename(filePath, '.mp3'),
+            title: metadata.common.title || fileName.replace(extension, ''),
             artist: metadata.common.artist || 'Unknown Artist',
-            album: metadata.common.album || 'Unknown Album',
+            album: metadata.common.album || (isVideo ? 'Videos' : 'Unknown Album'),
             genre: metadata.common.genre || [],
             duration: metadata.format.duration || 0,
             picture: pictureBase64,

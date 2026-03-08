@@ -1,5 +1,5 @@
 // ============================================================
-// SOUNDSTORM MUSIC PLAYER — renderer.js
+// LUMORA MUSIC PLAYER — renderer.js
 // Open Source Desktop MP3 Player
 // ============================================================
 
@@ -9,8 +9,15 @@
 
 
 
-import { addFolderBtn, addFolderBtn2, refreshLibraryBtn, refreshVideosBtn, playlistEl, loadingIndicator, libraryCount, playbackControls, playPauseBtn, playIcon, pauseIcon, prevBtn, nextBtn, shuffleBtn, repeatBtn, seekBar, timeCurrent, timeTotal, volumeBar, muteBtn, volIconOn, volIconOff, trackTitle, trackArtist, trackArt, artPlaceholder, eqBars, bgBlur, playerFavBtn, favCountBadge, favCountText, favoritesList, favoritesEmpty, searchInput, librarySearch, favoritesSearch, videosSearch, searchResults, searchHint, playlistsNavList, newPlaylistBtn, folderList, settingsBtn, settingsModal, closeSettingsBtn, createPlaylistModal, closeCreatePlaylistBtn, cancelCreatePlaylistBtn, confirmCreatePlaylistBtn, newPlaylistNameInput, contextMenu, ctxPlay, ctxFav, ctxAddPlaylist, ctxPlaylistSubmenu, ctxRemovePlaylist, ctxReveal, ctxRename, ctxDelete, renameModal, closeRenameBtn, cancelRenameBtn, confirmRenameBtn, renameInput, renamePlaylistBtn, renamePlaylistModal, closeRenamePlaylistBtn, cancelRenamePlaylistBtn, confirmRenamePlaylistBtn, renamePlaylistInput, deletePlaylistBtn, playlistViewName, playlistViewCount, playlistViewSongs, playlistEmpty, addSongsToPlaylistBtn, songPickerModal, closeSongPickerBtn, cancelSongPickerBtn, confirmSongPickerBtn, songPickerSearch, songPickerList, songPickerSelectedCount, toast, colorPicker, bgColorPicker, panelColorPicker, glassOpacity, opacityVal, blurIntensity, blurVal, fontSelect, resetSettingsBtn, bgImageBtn, clearBgImageBtn, fontDropdown, fontDropdownTrigger, fontDropdownMenu, fontDropdownLabel, canvas, mobileMenuBtn, sidebar, sidebarOverlay, videoPlayerContainer, videoPlayer, closeVideoBtn, videosList, videosCount, videosEmpty, videoCountBadge, videoPlayerMain, mainVideoPlayer, currentVideoTitle, loadSubtitleBtn, closeVideoPlayerBtn, librarySortBtn, librarySortLabel, librarySortMenu, videosSortBtn, videosSortLabel, videosSortMenu, prevVideoBtn, nextVideoBtn, videoQualityBadge } from './js/ui/dom.js';
-import { state, loadState, saveFavorites, savePlaylists, saveFolders, saveLastTrack, getLastTrack, saveLastTrackTime, getLastTrackTime } from './js/core/state.js';
+import { addFolderBtn, addFolderBtn2, refreshLibraryBtn, refreshVideosBtn, playlistEl, loadingIndicator, libraryCount, playbackControls, playPauseBtn, playIcon, pauseIcon, prevBtn, nextBtn, shuffleBtn, repeatBtn, seekBar, timeCurrent, timeTotal, volumeBar, muteBtn, volIconOn, volIconOff, trackTitle, trackArtist, trackArt, artPlaceholder, eqBars, bgBlur, playerFavBtn, favCountBadge, favCountText, favoritesList, favoritesEmpty, searchInput, librarySearch, favoritesSearch, videosSearch, searchResults, searchHint, playlistsNavList, newPlaylistBtn, folderList, settingsBtn, settingsModal, closeSettingsBtn, createPlaylistModal, closeCreatePlaylistBtn, cancelCreatePlaylistBtn, confirmCreatePlaylistBtn, newPlaylistNameInput, contextMenu, ctxPlay, ctxFav, ctxAddPlaylist, ctxPlaylistSubmenu, ctxRemovePlaylist, ctxReveal, ctxRename, ctxDelete, renameModal, closeRenameBtn, cancelRenameBtn, confirmRenameBtn, renameInput, renamePlaylistBtn, renamePlaylistModal, closeRenamePlaylistBtn, cancelRenamePlaylistBtn, confirmRenamePlaylistBtn, renamePlaylistInput, deletePlaylistBtn, playlistViewName, playlistViewCount, playlistViewSongs, playlistEmpty, addSongsToPlaylistBtn, songPickerModal, closeSongPickerBtn, cancelSongPickerBtn, confirmSongPickerBtn, songPickerSearch, songPickerList, songPickerSelectedCount, toast, colorPicker, bgColorPicker, panelColorPicker, glassOpacity, opacityVal, blurIntensity, blurVal, fontSelect, resetSettingsBtn, bgImageBtn, clearBgImageBtn, fontDropdown, fontDropdownTrigger, fontDropdownMenu, fontDropdownLabel, canvas, mobileMenuBtn, sidebar, sidebarOverlay, videoPlayerContainer, videoPlayer, closeVideoBtn, videosList, videosCount, videosEmpty, videoCountBadge, videoPlayerMain, mainVideoPlayer, currentVideoTitle, loadSubtitleBtn, closeVideoPlayerBtn, librarySortBtn, librarySortLabel, librarySortMenu, videosSortBtn, videosSortLabel, videosSortMenu, prevVideoBtn, nextVideoBtn, videoQualityBadge,
+    librarySelectionToolbar, librarySelectionCount, librarySelectAllBtn, libraryDeselectBtn, libraryPlaySelectedBtn, libraryDeleteSelectedBtn,
+    favoritesSelectionToolbar, favoritesSelectionCount, favoritesSelectAllBtn, favoritesDeselectBtn, favoritesPlaySelectedBtn, favoritesDeleteSelectedBtn,
+    videosSelectionToolbar, videosSelectionCount, videosSelectAllBtn, videosDeselectBtn, videosDeleteSelectedBtn,
+    ctxSelect, ctxSelectAll, ctxBulkHeader, ctxBulkPlay, ctxBulkFav, ctxBulkPlaylist, ctxBulkPlaylistSubmenu, ctxBulkDeselect, ctxBulkDelete,
+    libraryAddPlaylistBtn, favoritesAddPlaylistBtn,
+    weeklyReportModal, closeWeeklyReportBtn, reportPeriod, reportTotalPlays, reportTotalTime, reportUniqueSongs, reportUniqueArtists, reportTopSongs, reportTopArtists, reportTopGenres, reportDailyChart, reportEmpty, debugWeeklyReportBtn
+} from './js/ui/dom.js';
+import { state, loadState, saveFavorites, savePlaylists, saveFolders, saveLastTrack, getLastTrack, saveLastTrackTime, getLastTrackTime, getPlayHistory, getLastReportDate, saveLastReportDate } from './js/core/state.js';
 import { escapeHtml, showToast, formatTime } from './js/core/utils.js';
 import { initSettings, setAppWallpaper } from './js/ui/settings.js';
 import { initAudio, playSong, togglePlay, nextSong, prevSong, audio } from './js/core/audio.js';
@@ -113,6 +120,9 @@ async function init() {
         // Restore last played track after initial render
         await restoreLastTrack();
         
+        // Check if weekly report should auto-show
+        await checkWeeklyReportAutoShow();
+        
         // Hide app loader after everything is ready
         setTimeout(() => {
             if (appLoader) {
@@ -179,6 +189,9 @@ function switchView(viewId, params = {}) {
 
     state.currentView = viewId;
 
+    // Exit selection mode when navigating to a different view
+    if (state.selectionMode) exitSelectionMode();
+
     // Clear search inputs
     librarySearch.value = '';
     favoritesSearch.value = '';
@@ -239,51 +252,101 @@ if (sidebarOverlay) {
 }
 
 // ===================== SORTING =====================
-let currentLibrarySort = localStorage.getItem('soundstorm-library-sort') || 'title';
-let currentVideosSort = localStorage.getItem('soundstorm-videos-sort') || 'title';
+let currentLibrarySort = localStorage.getItem('lumora-library-sort') || 'title';
+let currentVideosSort = localStorage.getItem('lumora-videos-sort') || 'title';
+let currentLibrarySortDir = localStorage.getItem('lumora-library-sort-dir') || 'asc';
+let currentVideosSortDir = localStorage.getItem('lumora-videos-sort-dir') || 'asc';
 
-function sortItems(items, sortBy) {
+function sortItems(items, sortBy, direction = 'asc') {
     const sorted = [...items];
+    
+    // Random doesn't respect direction
+    if (sortBy === 'random') {
+        for (let i = sorted.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
+        }
+        return sorted;
+    }
+    
+    const dir = direction === 'desc' ? -1 : 1;
+    
     switch (sortBy) {
         case 'title':
-            return sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+            sorted.sort((a, b) => dir * (a.title || '').localeCompare(b.title || ''));
+            break;
         case 'artist':
-            return sorted.sort((a, b) => (a.artist || '').localeCompare(b.artist || ''));
+            sorted.sort((a, b) => dir * (a.artist || '').localeCompare(b.artist || ''));
+            break;
         case 'album':
-            return sorted.sort((a, b) => (a.album || '').localeCompare(b.album || ''));
+            sorted.sort((a, b) => dir * (a.album || '').localeCompare(b.album || ''));
+            break;
+        case 'genre':
+            sorted.sort((a, b) => {
+                const gA = (Array.isArray(a.genre) ? a.genre.join(', ') : (a.genre || ''));
+                const gB = (Array.isArray(b.genre) ? b.genre.join(', ') : (b.genre || ''));
+                return dir * gA.localeCompare(gB);
+            });
+            break;
         case 'duration':
-            return sorted.sort((a, b) => (b.duration || 0) - (a.duration || 0));
+            sorted.sort((a, b) => dir * ((a.duration || 0) - (b.duration || 0)));
+            break;
+        case 'fileName':
+            sorted.sort((a, b) => {
+                const nameA = (a.path ? a.path.split('/').pop().split('\\').pop() : '').toLowerCase();
+                const nameB = (b.path ? b.path.split('/').pop().split('\\').pop() : '').toLowerCase();
+                return dir * nameA.localeCompare(nameB);
+            });
+            break;
         case 'dateAdded':
-            return sorted.reverse(); // Newest first (assuming array order = add order)
+            if (direction === 'desc') {
+                sorted.reverse();
+            }
+            // asc = original order (oldest first), desc = reversed (newest first)
+            break;
         default:
-            return sorted;
+            break;
     }
+    return sorted;
 }
 
-function updateSortLabel(label, sortBy) {
+function updateSortLabel(label, sortBy, direction) {
     const labels = {
         title: 'Title',
         artist: 'Artist',
         album: 'Album',
+        genre: 'Genre',
         duration: 'Duration',
-        dateAdded: 'Date Added'
+        fileName: 'File Name',
+        dateAdded: 'Date Added',
+        random: 'Random'
     };
-    label.textContent = labels[sortBy] || 'Title';
+    const dirArrow = sortBy === 'random' ? '' : (direction === 'desc' ? ' ↓' : ' ↑');
+    label.textContent = (labels[sortBy] || 'Title') + dirArrow;
+}
+
+function updateSortDirButtons(container, direction) {
+    if (!container) return;
+    container.querySelectorAll('.sort-dir-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.dir === direction);
+    });
 }
 
 // Initialize sort UI on page load
 function initSortUI() {
     // Update library sort label and menu
-    updateSortLabel(librarySortLabel, currentLibrarySort);
+    updateSortLabel(librarySortLabel, currentLibrarySort, currentLibrarySortDir);
     librarySortMenu.querySelectorAll('.sort-option').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.sort === currentLibrarySort);
     });
+    updateSortDirButtons(document.getElementById('library-sort-dir'), currentLibrarySortDir);
     
     // Update videos sort label and menu
-    updateSortLabel(videosSortLabel, currentVideosSort);
+    updateSortLabel(videosSortLabel, currentVideosSort, currentVideosSortDir);
     videosSortMenu.querySelectorAll('.sort-option').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.sort === currentVideosSort);
     });
+    updateSortDirButtons(document.getElementById('videos-sort-dir'), currentVideosSortDir);
 }
 
 // Library sort dropdown
@@ -296,13 +359,23 @@ librarySortBtn.addEventListener('click', (e) => {
 });
 
 librarySortMenu.addEventListener('click', (e) => {
+    // Handle sort option click
     if (e.target.classList.contains('sort-option')) {
         currentLibrarySort = e.target.dataset.sort;
-        localStorage.setItem('soundstorm-library-sort', currentLibrarySort);
+        localStorage.setItem('lumora-library-sort', currentLibrarySort);
         librarySortBtn.parentElement.classList.remove('open');
         librarySortMenu.classList.add('hidden');
         renderLibraryView();
     }
+    // Handle sort direction button click
+    if (e.target.closest('.sort-dir-btn')) {
+        const btn = e.target.closest('.sort-dir-btn');
+        currentLibrarySortDir = btn.dataset.dir;
+        localStorage.setItem('lumora-library-sort-dir', currentLibrarySortDir);
+        updateSortDirButtons(document.getElementById('library-sort-dir'), currentLibrarySortDir);
+        renderLibraryView();
+    }
+    e.stopPropagation();
 });
 
 // Videos sort dropdown
@@ -317,11 +390,19 @@ videosSortBtn.addEventListener('click', (e) => {
 videosSortMenu.addEventListener('click', (e) => {
     if (e.target.classList.contains('sort-option')) {
         currentVideosSort = e.target.dataset.sort;
-        localStorage.setItem('soundstorm-videos-sort', currentVideosSort);
+        localStorage.setItem('lumora-videos-sort', currentVideosSort);
         videosSortBtn.parentElement.classList.remove('open');
         videosSortMenu.classList.add('hidden');
         renderVideosView();
     }
+    if (e.target.closest('.sort-dir-btn')) {
+        const btn = e.target.closest('.sort-dir-btn');
+        currentVideosSortDir = btn.dataset.dir;
+        localStorage.setItem('lumora-videos-sort-dir', currentVideosSortDir);
+        updateSortDirButtons(document.getElementById('videos-sort-dir'), currentVideosSortDir);
+        renderVideosView();
+    }
+    e.stopPropagation();
 });
 
 // Close sort menus when clicking outside
@@ -439,7 +520,10 @@ function renderLibraryView(searchTerm = '') {
     }
     
     // Sort audio files
-    const sorted = sortItems(audioFiles, currentLibrarySort);
+    const sorted = sortItems(audioFiles, currentLibrarySort, currentLibrarySortDir);
+    
+    // Pre-compute the sorted play queue (original indices in sorted order)
+    const sortedPlayQueue = sorted.map(song => state.playlist.indexOf(song));
     
     // Batch render for better performance
     const BATCH_SIZE = 20; // Render 20 songs at a time
@@ -455,7 +539,7 @@ function renderLibraryView(searchTerm = '') {
         for (let i = start; i < end; i++) {
             const song = sorted[i];
             const originalIndex = state.playlist.indexOf(song);
-            const li = createSongRowElement(song, originalIndex, playlistEl);
+            const li = createSongRowElement(song, originalIndex, playlistEl, null, sortedPlayQueue);
             fragment.appendChild(li);
         }
         
@@ -471,13 +555,20 @@ function renderLibraryView(searchTerm = '') {
     // Start rendering
     renderBatch();
     
+    // Restore selection-mode class if active
+    if (state.selectionMode) {
+        playlistEl.classList.add('selection-mode');
+        updateSelectionToolbarForCurrentView();
+    }
+
     updateLibraryCount();
-    updateSortLabel(librarySortLabel, currentLibrarySort);
+    updateSortLabel(librarySortLabel, currentLibrarySort, currentLibrarySortDir);
     
     // Update selected state in menu
     librarySortMenu.querySelectorAll('.sort-option').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.sort === currentLibrarySort);
     });
+    updateSortDirButtons(document.getElementById('library-sort-dir'), currentLibrarySortDir);
 }
 
 // Helper to check if file is video
@@ -487,16 +578,20 @@ function isVideoFile(path) {
 
 // ===================== SONG ROW RENDERER =====================
 // Create song row element without immediately appending (for batch rendering)
-function createSongRowElement(item, index, container, fromPlaylistId = null) {
+function createSongRowElement(item, index, container, fromPlaylistId = null, sortedPlayQueue = null) {
     const li = document.createElement('li');
     li.className = 'song-row';
     li.dataset.index = index;
+    li.dataset.path = item.path;
 
     const isFav = state.favorites.includes(item.path);
     const artSrc = item.picture || '';
     const defaultArt = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>`;
 
+    const isSelected = state.selectedItems.has(item.path);
+
     li.innerHTML = `
+        <span class="sel-checkbox${isSelected ? ' checked' : ''}"></span>
         <span class="song-num">${index + 1}</span>
         ${artSrc
             ? `<img src="${artSrc}" class="song-art-small" loading="lazy" alt="">`
@@ -512,6 +607,8 @@ function createSongRowElement(item, index, container, fromPlaylistId = null) {
         </button>
     `;
 
+    if (isSelected) li.classList.add('selected');
+
     li.querySelectorAll('img.song-art-small').forEach(img => {
         img.addEventListener('error', () => {
             const div = document.createElement('div');
@@ -522,26 +619,45 @@ function createSongRowElement(item, index, container, fromPlaylistId = null) {
         }, { once: true });
     });
 
-    // Click to play audio
+    // Click to play or toggle selection
     li.addEventListener('click', (e) => {
         if (e.target.closest('.song-fav-btn')) return;
-        state.playQueueContext = Array.from(e.currentTarget.parentElement.querySelectorAll('.song-row')).map(r => parseInt(r.dataset.index));
+
+        if (state.selectionMode) {
+            // Toggle selection
+            toggleItemSelection(item.path);
+            updateSelectionToolbarForCurrentView();
+            return;
+        }
+
+        // Long press or Ctrl/Shift to enter selection mode
+        if (e.ctrlKey || e.metaKey || e.shiftKey) {
+            enterSelectionMode(li.parentElement);
+            toggleItemSelection(item.path);
+            updateSelectionToolbarForCurrentView();
+            return;
+        }
+
+        // Use pre-computed sorted queue if available, otherwise read from DOM order
+        if (sortedPlayQueue && sortedPlayQueue.length > 0) {
+            state.playQueueContext = sortedPlayQueue;
+        } else {
+            state.playQueueContext = Array.from(e.currentTarget.parentElement.querySelectorAll('.song-row')).map(r => parseInt(r.dataset.index));
+        }
         playSong(index);
     });
 
     // Fav button inside song row
     li.querySelector('.song-fav-btn').addEventListener('click', (e) => {
         e.stopPropagation();
-        const isFavNow = !state.favorites.includes(item.path);   // what it WILL be after toggle
-        toggleFavorite(item.path);                          // toggle it
-        // Immediately update this row visually
+        const isFavNow = !state.favorites.includes(item.path);
+        toggleFavorite(item.path);
         const btn = e.currentTarget;
         btn.classList.toggle('active', isFavNow);
         btn.title = isFavNow ? 'Remove from Favorites' : 'Add to Favorites';
         const svg = btn.querySelector('svg');
         svg.setAttribute('fill', isFavNow ? 'currentColor' : 'none');
         svg.setAttribute('stroke', isFavNow ? 'var(--primary)' : 'currentColor');
-        // Sync all other rows showing the same song
         syncFavIconsForPath(item.path, isFavNow);
     });
 
@@ -698,17 +814,18 @@ function renderVideosView(searchTerm = '') {
     
     if (videoFiles.length === 0) {
         videosEmpty.classList.remove('hidden');
-        updateSortLabel(videosSortLabel, currentVideosSort);
+        updateSortLabel(videosSortLabel, currentVideosSort, currentVideosSortDir);
         videosSortMenu.querySelectorAll('.sort-option').forEach(opt => {
             opt.classList.toggle('selected', opt.dataset.sort === currentVideosSort);
         });
+        updateSortDirButtons(document.getElementById('videos-sort-dir'), currentVideosSortDir);
         return;
     }
     
     videosEmpty.classList.add('hidden');
     
     // Sort video files
-    const sorted = sortItems(videoFiles, currentVideosSort);
+    const sorted = sortItems(videoFiles, currentVideosSort, currentVideosSortDir);
     
     // Render videos in batches for better performance
     const BATCH_SIZE = 12;
@@ -733,12 +850,13 @@ function renderVideosView(searchTerm = '') {
     
     renderBatch();
     
-    updateSortLabel(videosSortLabel, currentVideosSort);
+    updateSortLabel(videosSortLabel, currentVideosSort, currentVideosSortDir);
     
     // Update selected state in menu
     videosSortMenu.querySelectorAll('.sort-option').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.sort === currentVideosSort);
     });
+    updateSortDirButtons(document.getElementById('videos-sort-dir'), currentVideosSortDir);
 }
 
 function processThumbnailQueue() {
@@ -843,6 +961,11 @@ function renderVideoCard(video, index) {
     thumbnailQueue.push(generateThumbnail);
     processThumbnailQueue();
     
+    // Selection checkbox badge (top-left of thumbnail)
+    const selChk = document.createElement('span');
+    selChk.className = 'video-sel-checkbox' + (state.selectedItems.has(video.path) ? ' checked' : '');
+    thumbnailDiv.appendChild(selChk);
+
     // Play overlay
     const overlay = document.createElement('div');
     overlay.className = 'video-play-overlay';
@@ -873,7 +996,20 @@ function renderVideoCard(video, index) {
     `;
     li.appendChild(infoDiv);
     
-    li.addEventListener('click', () => {
+    li.dataset.path = video.path;
+
+    li.addEventListener('click', (e) => {
+        if (state.selectionMode) {
+            toggleItemSelection(video.path);
+            updateSelectionToolbarForCurrentView();
+            return;
+        }
+        if (e.ctrlKey || e.metaKey || e.shiftKey) {
+            enterSelectionMode(videosList);
+            toggleItemSelection(video.path);
+            updateSelectionToolbarForCurrentView();
+            return;
+        }
         playVideoInMainPlayer(video, index);
     });
     
@@ -1347,44 +1483,123 @@ renamePlaylistInput.addEventListener('keydown', (e) => {
 // ===================== CONTEXT MENU =====================
 let contextTargetPlaylistId = null;
 
+/**
+ * Helper: hide all bulk action items in context menu
+ */
+function hideBulkContextItems() {
+    ctxBulkHeader.classList.add('hidden');
+    ctxBulkPlay.classList.add('hidden');
+    ctxBulkFav.classList.add('hidden');
+    ctxBulkPlaylist.classList.add('hidden');
+    ctxBulkPlaylistSubmenu.classList.add('hidden');
+    ctxBulkDeselect.classList.add('hidden');
+    ctxBulkDelete.classList.add('hidden');
+    // Hide bulk separators
+    contextMenu.querySelectorAll('.ctx-bulk-sep').forEach(el => el.classList.add('hidden'));
+}
+
+/**
+ * Helper: hide all single-item action items
+ */
+function hideSingleContextItems() {
+    ctxPlay.classList.add('hidden');
+    ctxFav.classList.add('hidden');
+    ctxAddPlaylist.classList.add('hidden');
+    ctxRemovePlaylist.classList.add('hidden');
+    ctxReveal.classList.add('hidden');
+    ctxRename.classList.add('hidden');
+    ctxDelete.classList.add('hidden');
+    ctxPlaylistSubmenu.classList.add('hidden');
+    // Hide single separators
+    contextMenu.querySelectorAll('.ctx-single-sep').forEach(el => el.classList.add('hidden'));
+}
+
+/**
+ * Show bulk action items when multiple items are selected
+ */
+function showBulkContextItems(isVideoView) {
+    const count = state.selectedItems.size;
+    ctxBulkHeader.textContent = `${count} item${count !== 1 ? 's' : ''} selected`;
+    ctxBulkHeader.classList.remove('hidden');
+    
+    if (!isVideoView) {
+        ctxBulkPlay.classList.remove('hidden');
+        ctxBulkFav.classList.remove('hidden');
+        ctxBulkPlaylist.classList.remove('hidden');
+    }
+    
+    ctxBulkDeselect.classList.remove('hidden');
+    ctxBulkDelete.classList.remove('hidden');
+    contextMenu.querySelectorAll('.ctx-bulk-sep').forEach(el => el.classList.remove('hidden'));
+}
+
+// Store the path of the right-clicked item so "Select" knows what to select
+let contextRightClickPath = null;
+let contextRightClickListEl = null;
+
 function showContextMenu(e, index, fromPlaylistId = null) {
     state.contextTargetIndex = index;
     state.playQueueContext = Array.from(e.currentTarget.parentElement.querySelectorAll('.song-row')).map(r => parseInt(r.dataset.index));
     contextTargetPlaylistId = fromPlaylistId;
+    contextTargetVideoPath = null;
+    
+    const itemPath = state.playlist[index]?.path;
+    contextRightClickPath = itemPath;
+    contextRightClickListEl = e.currentTarget.parentElement;
+    
     const x = Math.min(e.clientX, window.innerWidth - 220);
-    const y = Math.min(e.clientY, window.innerHeight - 240);
+    const y = Math.min(e.clientY, window.innerHeight - 320);
     contextMenu.style.left = x + 'px';
     contextMenu.style.top = y + 'px';
     contextMenu.classList.remove('hidden');
     ctxPlaylistSubmenu.classList.add('hidden');
-
-    const isFav = state.favorites.includes(state.playlist[index]?.path);
-    ctxFav.textContent = isFav ? '♥ Remove from Favorites' : '♡ Add to Favorites';
-
-    // Show "Remove from Playlist" only when right-clicking inside a state.playlist
-    const inPlaylist = !!fromPlaylistId;
-    ctxRemovePlaylist.classList.toggle('hidden', !inPlaylist);
     
-    // Show song-specific options
-    ctxPlay.classList.remove('hidden');
-    ctxFav.classList.remove('hidden');
-    ctxAddPlaylist.classList.remove('hidden');
-    
-    // Show file operations
-    ctxReveal.classList.remove('hidden');
-    ctxRename.classList.remove('hidden');
-    ctxDelete.classList.remove('hidden');
+    // Reset all items
+    hideBulkContextItems();
+    hideSingleContextItems();
+
+    if (state.selectionMode && state.selectedItems.size > 0) {
+        // === BULK MODE: items are selected ===
+        // Also select the right-clicked item if not already
+        if (itemPath && !state.selectedItems.has(itemPath)) {
+            toggleItemSelection(itemPath);
+            updateSelectionToolbarForCurrentView();
+        }
+        showBulkContextItems(false);
+        // Hide single select, show select all
+        ctxSelect.classList.add('hidden');
+        ctxSelectAll.classList.add('hidden');
+    } else {
+        // === SINGLE MODE: no selection, normal right-click ===
+        const isFav = state.favorites.includes(itemPath);
+        ctxFav.textContent = isFav ? '♥ Remove from Favorites' : '♡ Add to Favorites';
+
+        const inPlaylist = !!fromPlaylistId;
+        ctxRemovePlaylist.classList.toggle('hidden', !inPlaylist);
+        
+        // Show all single-item options
+        ctxPlay.classList.remove('hidden');
+        ctxFav.classList.remove('hidden');
+        ctxAddPlaylist.classList.remove('hidden');
+        ctxReveal.classList.remove('hidden');
+        ctxRename.classList.remove('hidden');
+        ctxDelete.classList.remove('hidden');
+        contextMenu.querySelectorAll('.ctx-single-sep').forEach(el => el.classList.remove('hidden'));
+        
+        // Show Select / Select All
+        ctxSelect.classList.remove('hidden');
+        ctxSelectAll.classList.remove('hidden');
+        ctxSelect.textContent = '☑ Select';
+    }
 }
 
 document.addEventListener('click', () => {
     contextMenu.classList.add('hidden');
     ctxPlaylistSubmenu.classList.add('hidden');
+    ctxBulkPlaylistSubmenu.classList.add('hidden');
     contextTargetVideoPath = null;
-    
-    // Reset context menu items visibility for songs
-    ctxPlay.classList.remove('hidden');
-    ctxFav.classList.remove('hidden');
-    ctxAddPlaylist.classList.remove('hidden');
+    contextRightClickPath = null;
+    contextRightClickListEl = null;
 });
 
 contextMenu.addEventListener('click', (e) => e.stopPropagation());
@@ -1476,22 +1691,42 @@ let contextTargetVideoPath = null;
 
 function showVideoContextMenu(e, video, index) {
     contextTargetVideoPath = video.path;
+    contextRightClickPath = video.path;
+    contextRightClickListEl = videosList;
+    state.contextTargetIndex = -1;
+    
     const x = Math.min(e.clientX, window.innerWidth - 220);
-    const y = Math.min(e.clientY, window.innerHeight - 200);
+    const y = Math.min(e.clientY, window.innerHeight - 280);
     contextMenu.style.left = x + 'px';
     contextMenu.style.top = y + 'px';
     contextMenu.classList.remove('hidden');
     
-    // Hide song-specific options
-    ctxPlay.classList.add('hidden');
-    ctxFav.classList.add('hidden');
-    ctxAddPlaylist.classList.add('hidden');
-    ctxRemovePlaylist.classList.add('hidden');
-    
-    // Show file operations
-    ctxReveal.classList.remove('hidden');
-    ctxRename.classList.remove('hidden');
-    ctxDelete.classList.remove('hidden');
+    // Reset all items
+    hideBulkContextItems();
+    hideSingleContextItems();
+
+    if (state.selectionMode && state.selectedItems.size > 0) {
+        // === BULK MODE ===
+        if (!state.selectedItems.has(video.path)) {
+            toggleItemSelection(video.path);
+            updateSelectionToolbarForCurrentView();
+        }
+        showBulkContextItems(true);
+        ctxSelect.classList.add('hidden');
+        ctxSelectAll.classList.add('hidden');
+    } else {
+        // === SINGLE MODE for video ===
+        // Show file operations only
+        ctxReveal.classList.remove('hidden');
+        ctxRename.classList.remove('hidden');
+        ctxDelete.classList.remove('hidden');
+        contextMenu.querySelectorAll('.ctx-single-sep').forEach(el => el.classList.remove('hidden'));
+        
+        // Show Select / Select All
+        ctxSelect.classList.remove('hidden');
+        ctxSelectAll.classList.remove('hidden');
+        ctxSelect.textContent = '☑ Select';
+    }
 }
 
 ctxReveal.addEventListener('click', () => {
@@ -1712,6 +1947,676 @@ videosSearch.addEventListener('input', () => {
     renderVideosView(term);
 });
 
+// ===================== SELECTION SYSTEM =====================
 
+/**
+ * Enter selection mode on a given list container (.song-list or .video-grid).
+ * Adds the CSS class that reveals checkboxes.
+ */
+function enterSelectionMode(listEl) {
+    state.selectionMode = true;
+    if (listEl) listEl.classList.add('selection-mode');
+}
 
+/**
+ * Exit selection mode completely — clear selections, hide toolbar.
+ */
+function exitSelectionMode() {
+    state.selectionMode = false;
+    state.selectedItems.clear();
+    // Remove selection-mode from all lists
+    document.querySelectorAll('.song-list, .video-grid').forEach(el => el.classList.remove('selection-mode'));
+    // Deselect all visual states
+    document.querySelectorAll('.song-row.selected').forEach(el => {
+        el.classList.remove('selected');
+        const chk = el.querySelector('.sel-checkbox');
+        if (chk) chk.classList.remove('checked');
+    });
+    document.querySelectorAll('.video-item.selected').forEach(el => {
+        el.classList.remove('selected');
+        const chk = el.querySelector('.video-sel-checkbox');
+        if (chk) chk.classList.remove('checked');
+    });
+    // Hide all toolbars
+    [librarySelectionToolbar, favoritesSelectionToolbar, videosSelectionToolbar].forEach(tb => {
+        if (tb) tb.classList.add('hidden');
+    });
+}
 
+/**
+ * Toggle a single item's selected state by path.
+ */
+function toggleItemSelection(path) {
+    if (state.selectedItems.has(path)) {
+        state.selectedItems.delete(path);
+    } else {
+        state.selectedItems.add(path);
+    }
+    // Update visual state for every row / card showing this path
+    document.querySelectorAll(`.song-row[data-path="${CSS.escape(path)}"]`).forEach(row => {
+        const sel = state.selectedItems.has(path);
+        row.classList.toggle('selected', sel);
+        const chk = row.querySelector('.sel-checkbox');
+        if (chk) chk.classList.toggle('checked', sel);
+    });
+    document.querySelectorAll(`.video-item[data-path="${CSS.escape(path)}"]`).forEach(card => {
+        const sel = state.selectedItems.has(path);
+        card.classList.toggle('selected', sel);
+        const chk = card.querySelector('.video-sel-checkbox');
+        if (chk) chk.classList.toggle('checked', sel);
+    });
+    // If nothing left selected, exit selection mode
+    if (state.selectedItems.size === 0) {
+        exitSelectionMode();
+    }
+}
+
+/**
+ * Select ALL visible items in the given container.
+ */
+function selectAllInContainer(container) {
+    if (!container) return;
+    enterSelectionMode(container);
+    container.querySelectorAll('.song-row[data-path]').forEach(row => {
+        const path = row.dataset.path;
+        state.selectedItems.add(path);
+        row.classList.add('selected');
+        const chk = row.querySelector('.sel-checkbox');
+        if (chk) chk.classList.add('checked');
+    });
+    container.querySelectorAll('.video-item[data-path]').forEach(card => {
+        const path = card.dataset.path;
+        state.selectedItems.add(path);
+        card.classList.add('selected');
+        const chk = card.querySelector('.video-sel-checkbox');
+        if (chk) chk.classList.add('checked');
+    });
+}
+
+/**
+ * Update the correct selection toolbar based on current view.
+ */
+function updateSelectionToolbarForCurrentView() {
+    const count = state.selectedItems.size;
+
+    // Always hide all first
+    if (librarySelectionToolbar) librarySelectionToolbar.classList.add('hidden');
+    if (favoritesSelectionToolbar) favoritesSelectionToolbar.classList.add('hidden');
+    if (videosSelectionToolbar) videosSelectionToolbar.classList.add('hidden');
+
+    if (count === 0) { exitSelectionMode(); return; }
+
+    if (state.currentView === 'library') {
+        if (librarySelectionToolbar) {
+            librarySelectionCount.textContent = `${count} selected`;
+            librarySelectionToolbar.classList.remove('hidden');
+            playlistEl.classList.add('selection-mode');
+        }
+    } else if (state.currentView === 'favorites') {
+        if (favoritesSelectionToolbar) {
+            favoritesSelectionCount.textContent = `${count} selected`;
+            favoritesSelectionToolbar.classList.remove('hidden');
+            favoritesList.classList.add('selection-mode');
+        }
+    } else if (state.currentView === 'videos') {
+        if (videosSelectionToolbar) {
+            videosSelectionCount.textContent = `${count} selected`;
+            videosSelectionToolbar.classList.remove('hidden');
+            videosList.classList.add('selection-mode');
+        }
+    }
+}
+
+/**
+ * Play all selected audio tracks as a temporary in-memory queue.
+ */
+function playSelectedSongs() {
+    const selectedPaths = Array.from(state.selectedItems);
+    const audioIndices = selectedPaths
+        .filter(p => !isVideoFile(p))
+        .map(p => state.playlist.findIndex(s => s.path === p))
+        .filter(idx => idx !== -1);
+
+    if (audioIndices.length === 0) {
+        showToast('No audio tracks selected to play.');
+        return;
+    }
+
+    // Build a temporary play queue (local variable — not persisted)
+    const tempQueue = [...audioIndices];
+    state.playQueueContext = tempQueue;
+    playSong(tempQueue[0]);
+    showToast(`▶ Playing ${tempQueue.length} selected track${tempQueue.length !== 1 ? 's' : ''}`);
+    exitSelectionMode();
+}
+
+/**
+ * Delete all selected items (songs or videos) permanently.
+ */
+async function deleteSelectedItems() {
+    const count = state.selectedItems.size;
+    if (count === 0) return;
+
+    const isVideosView = state.currentView === 'videos';
+    const label = isVideosView ? 'video' : 'file';
+    if (!confirm(`Delete ${count} selected ${label}${count !== 1 ? 's' : ''}? They will be sent to your trash bin.`)) return;
+
+    const paths = Array.from(state.selectedItems);
+    let deleted = 0;
+    let failed = 0;
+
+    for (const path of paths) {
+        const res = await electronAPI.deleteFile(path);
+        if (res.success) {
+            deleted++;
+            // Remove from library
+            const idx = state.playlist.findIndex(item => item.path === path);
+            if (idx >= 0) state.playlist.splice(idx, 1);
+            // Clean from favorites
+            state.favorites = state.favorites.filter(p => p !== path);
+            // Clean from playlists
+            state.playlists.forEach(pl => {
+                pl.songs = pl.songs.filter(p => p !== path);
+            });
+        } else {
+            failed++;
+        }
+    }
+
+    if (deleted > 0) {
+        saveFavorites();
+        savePlaylists();
+        updateLibraryCount();
+        showToast(`🗑 Deleted ${deleted} ${label}${deleted !== 1 ? 's' : ''}${failed > 0 ? ` (${failed} failed)` : ''}`);
+    } else {
+        showToast(`Failed to delete selected files.`);
+    }
+
+    exitSelectionMode();
+
+    // Re-render current view
+    if (state.currentView === 'library') renderLibraryView();
+    else if (state.currentView === 'favorites') renderFavoritesView();
+    else if (state.currentView === 'videos') renderVideosView();
+}
+
+// ---- Wire up selection toolbar buttons ----
+
+// Library toolbar
+if (librarySelectAllBtn) {
+    librarySelectAllBtn.addEventListener('click', () => {
+        selectAllInContainer(playlistEl);
+        updateSelectionToolbarForCurrentView();
+    });
+}
+if (libraryDeselectBtn) {
+    libraryDeselectBtn.addEventListener('click', () => exitSelectionMode());
+}
+if (libraryPlaySelectedBtn) {
+    libraryPlaySelectedBtn.addEventListener('click', () => playSelectedSongs());
+}
+if (libraryDeleteSelectedBtn) {
+    libraryDeleteSelectedBtn.addEventListener('click', () => deleteSelectedItems());
+}
+
+// Favorites toolbar
+if (favoritesSelectAllBtn) {
+    favoritesSelectAllBtn.addEventListener('click', () => {
+        selectAllInContainer(favoritesList);
+        updateSelectionToolbarForCurrentView();
+    });
+}
+if (favoritesDeselectBtn) {
+    favoritesDeselectBtn.addEventListener('click', () => exitSelectionMode());
+}
+if (favoritesPlaySelectedBtn) {
+    favoritesPlaySelectedBtn.addEventListener('click', () => playSelectedSongs());
+}
+if (favoritesDeleteSelectedBtn) {
+    favoritesDeleteSelectedBtn.addEventListener('click', () => deleteSelectedItems());
+}
+
+// Videos toolbar
+if (videosSelectAllBtn) {
+    videosSelectAllBtn.addEventListener('click', () => {
+        selectAllInContainer(videosList);
+        updateSelectionToolbarForCurrentView();
+    });
+}
+if (videosDeselectBtn) {
+    videosDeselectBtn.addEventListener('click', () => exitSelectionMode());
+}
+if (videosDeleteSelectedBtn) {
+    videosDeleteSelectedBtn.addEventListener('click', () => deleteSelectedItems());
+}
+
+// ---- "Add to Playlist" buttons on selection toolbars ----
+function showPlaylistPickerForSelected() {
+    const selectedPaths = Array.from(state.selectedItems).filter(p => !isVideoFile(p));
+    if (selectedPaths.length === 0) {
+        showToast('No audio tracks selected');
+        return;
+    }
+    if (state.playlists.length === 0) {
+        showToast('Create a playlist first');
+        return;
+    }
+    // Reuse the song picker modal pattern — show a mini selection dialog
+    // For simplicity, build inline picker
+    const pickerHtml = state.playlists.map(pl => 
+        `<div class="ctx-item playlist-pick-item" data-playlist-id="${pl.id}" style="padding:10px 16px;cursor:pointer;">${escapeHtml(pl.name)} <span style="opacity:0.5;font-size:0.8em">(${pl.songs.length} songs)</span></div>`
+    ).join('');
+    
+    // Create a floating picker near the toolbar button
+    let pickerEl = document.getElementById('sel-playlist-picker');
+    if (pickerEl) pickerEl.remove();
+    
+    pickerEl = document.createElement('div');
+    pickerEl.id = 'sel-playlist-picker';
+    pickerEl.className = 'context-menu';
+    pickerEl.style.cssText = 'position:fixed;z-index:210;max-height:300px;overflow-y:auto;';
+    pickerEl.innerHTML = `<div style="padding:8px 14px;font-size:0.78rem;opacity:0.6;font-weight:600;">Add ${selectedPaths.length} song${selectedPaths.length !== 1 ? 's' : ''} to...</div>` + pickerHtml;
+    document.body.appendChild(pickerEl);
+    
+    // Position near the button
+    const btn = state.currentView === 'favorites' ? favoritesAddPlaylistBtn : libraryAddPlaylistBtn;
+    if (btn) {
+        const rect = btn.getBoundingClientRect();
+        pickerEl.style.left = rect.left + 'px';
+        pickerEl.style.top = (rect.bottom + 4) + 'px';
+    } else {
+        pickerEl.style.left = '50%';
+        pickerEl.style.top = '50%';
+    }
+    
+    pickerEl.querySelectorAll('.playlist-pick-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const plId = item.dataset.playlistId;
+            const pl = state.playlists.find(p => p.id === plId);
+            if (!pl) return;
+            let added = 0;
+            selectedPaths.forEach(path => {
+                if (!pl.songs.includes(path)) {
+                    pl.songs.push(path);
+                    added++;
+                }
+            });
+            savePlaylists();
+            renderPlaylistsNav();
+            if (added > 0) {
+                showToast(`Added ${added} song${added !== 1 ? 's' : ''} to "${pl.name}"`);
+            } else {
+                showToast('All songs already in playlist');
+            }
+            pickerEl.remove();
+        });
+    });
+    
+    // Close on outside click
+    const closePicker = (e) => {
+        if (!pickerEl.contains(e.target)) {
+            pickerEl.remove();
+            document.removeEventListener('click', closePicker);
+        }
+    };
+    setTimeout(() => document.addEventListener('click', closePicker), 10);
+}
+
+if (libraryAddPlaylistBtn) {
+    libraryAddPlaylistBtn.addEventListener('click', () => showPlaylistPickerForSelected());
+}
+if (favoritesAddPlaylistBtn) {
+    favoritesAddPlaylistBtn.addEventListener('click', () => showPlaylistPickerForSelected());
+}
+
+// ---- Context menu: Select / Select All / Bulk actions ----
+
+// "Select" — enter selection mode and select the right-clicked item
+ctxSelect.addEventListener('click', (e) => {
+    e.stopPropagation();
+    contextMenu.classList.add('hidden');
+    if (contextRightClickPath && contextRightClickListEl) {
+        enterSelectionMode(contextRightClickListEl);
+        if (!state.selectedItems.has(contextRightClickPath)) {
+            toggleItemSelection(contextRightClickPath);
+        }
+        updateSelectionToolbarForCurrentView();
+    }
+});
+
+// "Select All" — enter selection mode and select all in current view
+ctxSelectAll.addEventListener('click', (e) => {
+    e.stopPropagation();
+    contextMenu.classList.add('hidden');
+    if (state.currentView === 'library') selectAllInContainer(playlistEl);
+    else if (state.currentView === 'favorites') selectAllInContainer(favoritesList);
+    else if (state.currentView === 'videos') selectAllInContainer(videosList);
+    updateSelectionToolbarForCurrentView();
+});
+
+// Bulk: Play Selected
+ctxBulkPlay.addEventListener('click', (e) => {
+    e.stopPropagation();
+    contextMenu.classList.add('hidden');
+    playSelectedSongs();
+});
+
+// Bulk: Add Selected to Favorites
+ctxBulkFav.addEventListener('click', (e) => {
+    e.stopPropagation();
+    contextMenu.classList.add('hidden');
+    const paths = Array.from(state.selectedItems).filter(p => !isVideoFile(p));
+    let added = 0;
+    paths.forEach(path => {
+        if (!state.favorites.includes(path)) {
+            state.favorites.push(path);
+            added++;
+        }
+    });
+    if (added > 0) {
+        saveFavorites();
+        updateFavBadge();
+        showToast(`♥ Added ${added} song${added !== 1 ? 's' : ''} to favorites`);
+        paths.forEach(p => syncFavIconsForPath(p, true));
+    } else {
+        showToast('All selected songs already in favorites');
+    }
+    exitSelectionMode();
+});
+
+// Bulk: Add Selected to Playlist (submenu)
+let bulkSubmenuHideTimer = null;
+
+ctxBulkPlaylist.addEventListener('mouseenter', () => {
+    clearTimeout(bulkSubmenuHideTimer);
+    if (state.playlists.length === 0) {
+        ctxBulkPlaylistSubmenu.innerHTML = `<div class="ctx-item" style="opacity:0.5;cursor:default">No playlists yet</div>`;
+    } else {
+        ctxBulkPlaylistSubmenu.innerHTML = '';
+        state.playlists.forEach(pl => {
+            const item = document.createElement('div');
+            item.className = 'ctx-item';
+            item.textContent = pl.name;
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const paths = Array.from(state.selectedItems).filter(p => !isVideoFile(p));
+                let added = 0;
+                paths.forEach(path => {
+                    if (!pl.songs.includes(path)) {
+                        pl.songs.push(path);
+                        added++;
+                    }
+                });
+                savePlaylists();
+                renderPlaylistsNav();
+                if (added > 0) {
+                    showToast(`Added ${added} song${added !== 1 ? 's' : ''} to "${pl.name}"`);
+                } else {
+                    showToast('All songs already in playlist');
+                }
+                contextMenu.classList.add('hidden');
+                ctxBulkPlaylistSubmenu.classList.add('hidden');
+                exitSelectionMode();
+            });
+            ctxBulkPlaylistSubmenu.appendChild(item);
+        });
+    }
+    ctxBulkPlaylistSubmenu.style.top = '0';
+    ctxBulkPlaylistSubmenu.style.left = (contextMenu.offsetWidth - 4) + 'px';
+    ctxBulkPlaylistSubmenu.classList.remove('hidden');
+});
+
+ctxBulkPlaylist.addEventListener('mouseleave', () => {
+    bulkSubmenuHideTimer = setTimeout(() => ctxBulkPlaylistSubmenu.classList.add('hidden'), 200);
+});
+ctxBulkPlaylistSubmenu.addEventListener('mouseenter', () => clearTimeout(bulkSubmenuHideTimer));
+ctxBulkPlaylistSubmenu.addEventListener('mouseleave', () => {
+    bulkSubmenuHideTimer = setTimeout(() => ctxBulkPlaylistSubmenu.classList.add('hidden'), 200);
+});
+
+// Bulk: Deselect All
+ctxBulkDeselect.addEventListener('click', (e) => {
+    e.stopPropagation();
+    contextMenu.classList.add('hidden');
+    exitSelectionMode();
+});
+
+// Bulk: Delete Selected
+ctxBulkDelete.addEventListener('click', (e) => {
+    e.stopPropagation();
+    contextMenu.classList.add('hidden');
+    deleteSelectedItems();
+});
+
+// Keyboard shortcuts: Ctrl+A = select all in current view, Escape = deselect
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.selectionMode) {
+        exitSelectionMode();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a' && state.selectionMode) {
+        e.preventDefault();
+        if (state.currentView === 'library') selectAllInContainer(playlistEl);
+        else if (state.currentView === 'favorites') selectAllInContainer(favoritesList);
+        else if (state.currentView === 'videos') selectAllInContainer(videosList);
+        updateSelectionToolbarForCurrentView();
+    }
+});
+
+// Exit selection mode when switching views
+document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+    item.addEventListener('click', () => {
+        if (state.selectionMode) exitSelectionMode();
+    });
+});
+
+// ===================== WEEKLY REPORT =====================
+
+/**
+ * Generate and display the weekly listening report.
+ * @param {boolean} isAutoShow - true if triggered automatically (week boundary), false if debug
+ */
+async function showWeeklyReport(isAutoShow = false) {
+    const history = await getPlayHistory();
+
+    // Determine the week range: last 7 days
+    const now = Date.now();
+    const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
+    const weekPlays = history.filter(e => e.timestamp >= weekAgo);
+
+    // Format period string
+    const startDate = new Date(weekAgo);
+    const endDate = new Date(now);
+    const dateOpts = { month: 'short', day: 'numeric' };
+    reportPeriod.textContent = `${startDate.toLocaleDateString(undefined, dateOpts)} — ${endDate.toLocaleDateString(undefined, dateOpts)}`;
+
+    // Check if there's data
+    const allReportSections = weeklyReportModal.querySelectorAll('.report-summary-cards, .report-section');
+    if (weekPlays.length === 0) {
+        allReportSections.forEach(s => s.style.display = 'none');
+        reportEmpty.classList.remove('hidden');
+        weeklyReportModal.classList.remove('hidden');
+        return;
+    }
+
+    allReportSections.forEach(s => s.style.display = '');
+    reportEmpty.classList.add('hidden');
+
+    // --- Summary stats ---
+    const uniqueSongPaths = new Set(weekPlays.map(e => e.path));
+    const uniqueArtists = new Set(weekPlays.map(e => e.artist).filter(a => a && a !== 'Unknown Artist'));
+    const totalDurationSec = weekPlays.reduce((sum, e) => sum + (e.duration || 0), 0);
+
+    reportTotalPlays.textContent = weekPlays.length;
+    reportUniqueSongs.textContent = uniqueSongPaths.size;
+    reportUniqueArtists.textContent = uniqueArtists.size;
+
+    // Format total time
+    if (totalDurationSec >= 3600) {
+        const hrs = Math.floor(totalDurationSec / 3600);
+        const mins = Math.round((totalDurationSec % 3600) / 60);
+        reportTotalTime.textContent = `${hrs}h ${mins}m`;
+    } else {
+        reportTotalTime.textContent = `${Math.round(totalDurationSec / 60)}m`;
+    }
+
+    // --- Top Songs (by play count) ---
+    const songCounts = {};
+    weekPlays.forEach(e => {
+        const key = e.path;
+        if (!songCounts[key]) songCounts[key] = { title: e.title, artist: e.artist, count: 0 };
+        songCounts[key].count++;
+    });
+    const topSongs = Object.values(songCounts).sort((a, b) => b.count - a.count).slice(0, 5);
+
+    reportTopSongs.innerHTML = '';
+    topSongs.forEach((s, i) => {
+        const li = document.createElement('li');
+        li.className = 'report-list-item';
+        li.innerHTML = `
+            <span class="report-rank">${i + 1}</span>
+            <div class="report-item-info">
+                <span class="report-item-title">${escapeHtml(s.title)}</span>
+                <span class="report-item-sub">${escapeHtml(s.artist)}</span>
+            </div>
+            <span class="report-item-count">${s.count} play${s.count !== 1 ? 's' : ''}</span>
+        `;
+        reportTopSongs.appendChild(li);
+    });
+
+    // --- Top Artists ---
+    const artistCounts = {};
+    weekPlays.forEach(e => {
+        if (!e.artist || e.artist === 'Unknown Artist') return;
+        if (!artistCounts[e.artist]) artistCounts[e.artist] = 0;
+        artistCounts[e.artist]++;
+    });
+    const topArtists = Object.entries(artistCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    reportTopArtists.innerHTML = '';
+    topArtists.forEach(([artist, count], i) => {
+        const li = document.createElement('li');
+        li.className = 'report-list-item';
+        li.innerHTML = `
+            <span class="report-rank">${i + 1}</span>
+            <div class="report-item-info">
+                <span class="report-item-title">${escapeHtml(artist)}</span>
+            </div>
+            <span class="report-item-count">${count} play${count !== 1 ? 's' : ''}</span>
+        `;
+        reportTopArtists.appendChild(li);
+    });
+
+    // --- Top Genres ---
+    const genreCounts = {};
+    weekPlays.forEach(e => {
+        if (!e.genre || e.genre === 'Unknown') return;
+        if (!genreCounts[e.genre]) genreCounts[e.genre] = 0;
+        genreCounts[e.genre]++;
+    });
+    const topGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    reportTopGenres.innerHTML = '';
+    if (topGenres.length === 0) {
+        reportTopGenres.innerHTML = '<li class="report-list-item" style="justify-content: center; color: var(--text-dim);">No genre data available</li>';
+    } else {
+        topGenres.forEach(([genre, count], i) => {
+            const li = document.createElement('li');
+            li.className = 'report-list-item';
+            li.innerHTML = `
+                <span class="report-rank">${i + 1}</span>
+                <div class="report-item-info">
+                    <span class="report-item-title">${escapeHtml(genre)}</span>
+                </div>
+                <span class="report-item-count">${count} play${count !== 1 ? 's' : ''}</span>
+            `;
+            reportTopGenres.appendChild(li);
+        });
+    }
+
+    // --- Daily Activity Bar Chart ---
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dailyCounts = [0, 0, 0, 0, 0, 0, 0]; // index 0 = 7 days ago, index 6 = today
+    const dayLabels = [];
+
+    for (let d = 6; d >= 0; d--) {
+        const dayStart = new Date(now - d * 24 * 60 * 60 * 1000);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(dayStart);
+        dayEnd.setHours(23, 59, 59, 999);
+        const idx = 6 - d;
+        dailyCounts[idx] = weekPlays.filter(e => e.timestamp >= dayStart.getTime() && e.timestamp <= dayEnd.getTime()).length;
+        dayLabels[idx] = dayNames[dayStart.getDay()];
+    }
+
+    const maxCount = Math.max(...dailyCounts, 1);
+    reportDailyChart.innerHTML = '';
+    dailyCounts.forEach((count, i) => {
+        const barWrapper = document.createElement('div');
+        barWrapper.className = 'report-bar-wrapper';
+
+        const barFill = document.createElement('div');
+        barFill.className = 'report-bar-fill';
+        const heightPct = (count / maxCount) * 100;
+        barFill.style.height = `${heightPct}%`;
+        if (count > 0) {
+            barFill.title = `${count} play${count !== 1 ? 's' : ''}`;
+        }
+
+        const barCount = document.createElement('span');
+        barCount.className = 'report-bar-count';
+        barCount.textContent = count > 0 ? count : '';
+
+        const barLabel = document.createElement('span');
+        barLabel.className = 'report-bar-label';
+        barLabel.textContent = dayLabels[i];
+
+        barWrapper.appendChild(barCount);
+        barWrapper.appendChild(barFill);
+        barWrapper.appendChild(barLabel);
+        reportDailyChart.appendChild(barWrapper);
+    });
+
+    // Show the modal
+    weeklyReportModal.classList.remove('hidden');
+
+    // If auto-shown, save the timestamp so we don't show again this week
+    if (isAutoShow) {
+        await saveLastReportDate(now);
+    }
+}
+
+// Close weekly report modal
+closeWeeklyReportBtn.addEventListener('click', () => {
+    weeklyReportModal.classList.add('hidden');
+});
+weeklyReportModal.addEventListener('click', (e) => {
+    if (e.target === weeklyReportModal) weeklyReportModal.classList.add('hidden');
+});
+
+// Debug button in settings
+if (debugWeeklyReportBtn) {
+    debugWeeklyReportBtn.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+        showWeeklyReport(false);
+    });
+}
+
+// Auto-show weekly report check (called on init, after library loads)
+async function checkWeeklyReportAutoShow() {
+    const lastReportDate = await getLastReportDate();
+    const now = Date.now();
+    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+
+    // Show if it's been at least 7 days since the last report was shown
+    if (now - lastReportDate >= oneWeekMs) {
+        // Only show if there's some play history in the past week
+        const history = await getPlayHistory();
+        const weekAgo = now - oneWeekMs;
+        const weekPlays = history.filter(e => e.timestamp >= weekAgo);
+        if (weekPlays.length > 0) {
+            // Delay a bit so the app finishes loading before showing the modal
+            setTimeout(() => showWeeklyReport(true), 2000);
+        }
+    }
+}

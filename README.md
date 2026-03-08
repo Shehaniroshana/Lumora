@@ -1,6 +1,6 @@
 <div align="center">
 
-# ✦ SoundStorm
+# ✦ Lumora
 
 **A Beautiful, Feature-Rich Desktop Music Player**
 
@@ -9,7 +9,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey)](#-download)
 [![Version](https://img.shields.io/badge/Version-1.0.0-green)](#)
 
-*SoundStorm is a stunning, high-performance desktop media player built with Electron and modern web technologies. Featuring a gorgeous glassmorphism UI, powerful audio engine, video playback support, and extensive customization options.*
+*Lumora is a stunning, high-performance desktop media player built with Electron and modern web technologies. Featuring a gorgeous glassmorphism UI, powerful audio engine, video playback support, and extensive customization options.*
 
 [Download](#-download) • [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Build](#-building-from-source)
 
@@ -97,21 +97,21 @@
 #### Windows
 1. Download the `.exe` installer from [Releases](../../releases)
 2. Run the installer and follow the setup wizard
-3. Launch SoundStorm from Start Menu or Desktop shortcut
+3. Launch Lumora from Start Menu or Desktop shortcut
 
 #### Linux
 
 **AppImage (Recommended for Auto-Updates):**
 ```bash
 # Download the AppImage from releases
-chmod +x SoundStorm-*.AppImage
-./SoundStorm-*.AppImage
+chmod +x Lumora-*.AppImage
+./Lumora-*.AppImage
 ```
 > ✅ **AppImage supports auto-updates!** Click "Check for Updates" in Settings to get new versions automatically.
 
 **Debian/Ubuntu (.deb):**
 ```bash
-sudo dpkg -i SoundStorm-*.deb
+sudo dpkg -i Lumora-*.deb
 sudo apt-get install -f  # Install dependencies
 ```
 > ⚠️ **.deb packages do NOT support auto-updates.** You'll need to manually download and install new versions. Use AppImage if you want automatic updates!
@@ -124,7 +124,7 @@ sudo apt-get install -f  # Install dependencies
 1. **Add Music Folders**
    - Click "Add Folder" button in the sidebar
    - Select folders containing your music
-   - SoundStorm will automatically scan and import your tracks
+   - Lumora will automatically scan and import your tracks
 
 2. **Play Music**
    - Click any track to start playing
@@ -175,8 +175,8 @@ sudo apt-get install -f  # Install dependencies
 
 ```bash
 # Clone the repository
-git clone https://github.com/Shehaniroshana/SoundStorm.git
-cd SoundStorm
+git clone https://github.com/Shehaniroshana/Lumora.git
+cd Lumora
 
 # Install dependencies
 npm install
@@ -208,7 +208,7 @@ Build outputs will be in the `dist/` folder.
 ## 📂 Project Structure
 
 ```
-SoundStorm/
+Lumora/
 ├── main.js                      # Electron main process
 ├── preload.js                   # Context bridge (security)
 ├── renderer.js                  # Main renderer logic
@@ -285,18 +285,18 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### Terms of Use
 
-1. **Personal Use**: SoundStorm is free for personal, non-commercial use.
+1. **Personal Use**: Lumora is free for personal, non-commercial use.
 2. **Modifications**: You may modify the source code for personal use.
 3. **Distribution**: If you distribute modified versions, you must:
    - Include this license
    - Clearly state your changes
    - Credit the original author
-4. **Music Files**: You are responsible for having the rights to any music files you play in SoundStorm. This software does not provide or distribute any copyrighted content.
+4. **Music Files**: You are responsible for having the rights to any music files you play in Lumora. This software does not provide or distribute any copyrighted content.
 5. **No Warranty**: This software is provided "as is" without warranty of any kind.
 
 ### Privacy
 
-- **No Data Collection**: SoundStorm does not collect, store, or transmit any personal data.
+- **No Data Collection**: Lumora does not collect, store, or transmit any personal data.
 - **Local Storage**: All settings and playlists are stored locally on your device.
 - **No Analytics**: No usage tracking or analytics are implemented.
 - **No Accounts**: No login or account creation required.
@@ -329,7 +329,7 @@ Found a bug? Please [open an issue](../../issues) with:
 A: MP3, FLAC, WAV, OGG, AAC, M4A, OPUS, and more.
 
 **Q: Does it work offline?**  
-A: Yes! SoundStorm is completely offline and plays local files.
+A: Yes! Lumora is completely offline and plays local files.
 
 **Q: Can I import my playlists from Spotify/Apple Music?**  
 A: Not currently, but this is planned for future releases.
@@ -364,7 +364,7 @@ A:
 
 <div align="center">
 
-**⭐ If you like SoundStorm, give it a star on GitHub! ⭐**
+**⭐ If you like Lumora, give it a star on GitHub! ⭐**
 
 Made with ❤️ by [Shehan Iroshana](https://github.com/Shehaniroshana)
 

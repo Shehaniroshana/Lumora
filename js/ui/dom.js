@@ -156,3 +156,54 @@ export const updateStatus = document.getElementById('update-status');
 export const updateProgress = document.getElementById('update-progress');
 export const updateProgressBar = document.getElementById('update-progress-bar');
 export const updateProgressText = document.getElementById('update-progress-text');
+
+// Selection Toolbars
+export const librarySelectionToolbar = document.getElementById('library-selection-toolbar');
+export const librarySelectionCount = document.getElementById('library-selection-count');
+export const librarySelectAllBtn = document.getElementById('library-select-all-btn');
+export const libraryDeselectBtn = document.getElementById('library-deselect-btn');
+export const libraryPlaySelectedBtn = document.getElementById('library-play-selected-btn');
+export const libraryDeleteSelectedBtn = document.getElementById('library-delete-selected-btn');
+
+export const favoritesSelectionToolbar = document.getElementById('favorites-selection-toolbar');
+export const favoritesSelectionCount = document.getElementById('favorites-selection-count');
+export const favoritesSelectAllBtn = document.getElementById('favorites-select-all-btn');
+export const favoritesDeselectBtn = document.getElementById('favorites-deselect-btn');
+export const favoritesPlaySelectedBtn = document.getElementById('favorites-play-selected-btn');
+export const favoritesDeleteSelectedBtn = document.getElementById('favorites-delete-selected-btn');
+
+export const videosSelectionToolbar = document.getElementById('videos-selection-toolbar');
+export const videosSelectionCount = document.getElementById('videos-selection-count');
+export const videosSelectAllBtn = document.getElementById('videos-select-all-btn');
+export const videosDeselectBtn = document.getElementById('videos-deselect-btn');
+export const videosDeleteSelectedBtn = document.getElementById('videos-delete-selected-btn');
+
+// Context Menu - Select & Bulk Actions
+export const ctxSelect = document.getElementById('ctx-select');
+export const ctxSelectAll = document.getElementById('ctx-select-all');
+export const ctxBulkHeader = document.getElementById('ctx-bulk-header');
+export const ctxBulkPlay = document.getElementById('ctx-bulk-play');
+export const ctxBulkFav = document.getElementById('ctx-bulk-fav');
+export const ctxBulkPlaylist = document.getElementById('ctx-bulk-playlist');
+export const ctxBulkPlaylistSubmenu = document.getElementById('ctx-bulk-playlist-submenu');
+export const ctxBulkDeselect = document.getElementById('ctx-bulk-deselect');
+export const ctxBulkDelete = document.getElementById('ctx-bulk-delete');
+
+// Add to Playlist buttons on selection toolbars
+export const libraryAddPlaylistBtn = document.getElementById('library-add-playlist-btn');
+export const favoritesAddPlaylistBtn = document.getElementById('favorites-add-playlist-btn');
+
+// Weekly Report Modal
+export const weeklyReportModal = document.getElementById('weekly-report-modal');
+export const closeWeeklyReportBtn = document.getElementById('close-weekly-report-btn');
+export const reportPeriod = document.getElementById('weekly-report-period');
+export const reportTotalPlays = document.getElementById('report-total-plays');
+export const reportTotalTime = document.getElementById('report-total-time');
+export const reportUniqueSongs = document.getElementById('report-unique-songs');
+export const reportUniqueArtists = document.getElementById('report-unique-artists');
+export const reportTopSongs = document.getElementById('report-top-songs');
+export const reportTopArtists = document.getElementById('report-top-artists');
+export const reportTopGenres = document.getElementById('report-top-genres');
+export const reportDailyChart = document.getElementById('report-daily-chart');
+export const reportEmpty = document.getElementById('report-empty');
+export const debugWeeklyReportBtn = document.getElementById('debug-weekly-report-btn');

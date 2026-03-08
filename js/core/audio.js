@@ -1,5 +1,5 @@
 // ============================================================
-// SOUNDSTORM MUSIC PLAYER — audio.js
+// LUMORA MUSIC PLAYER — audio.js
 // Handles playback engine, volume, and visualizer
 // ============================================================
 
@@ -139,8 +139,11 @@ export async function playSong(index) {
     const song = state.playlist[state.currentIndex];
 
     // Save last played track
-    const { saveLastTrack } = await import('./state.js');
+    const { saveLastTrack, recordPlay } = await import('./state.js');
     saveLastTrack(song.path);
+
+    // Record play event for weekly report
+    recordPlay(song);
 
     trackTitle.textContent = song.title;
     trackArtist.textContent = song.artist;
@@ -264,12 +267,12 @@ export function setupVisualizer() {
         bassFilter = audioCtx.createBiquadFilter();
         bassFilter.type = 'lowshelf';
         bassFilter.frequency.value = 200;
-        bassFilter.gain.value = parseFloat(localStorage.getItem('soundstorm-bass') || '0');
+        bassFilter.gain.value = parseFloat(localStorage.getItem('lumora-bass') || '0');
 
         trebleFilter = audioCtx.createBiquadFilter();
         trebleFilter.type = 'highshelf';
         trebleFilter.frequency.value = 3200;
-        trebleFilter.gain.value = parseFloat(localStorage.getItem('soundstorm-treble') || '0');
+        trebleFilter.gain.value = parseFloat(localStorage.getItem('lumora-treble') || '0');
 
         analyser = audioCtx.createAnalyser();
         analyser.fftSize = 256;
