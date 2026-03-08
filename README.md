@@ -17,7 +17,9 @@
 
 </div>
 
----
+
+<img width="961" height="672" alt="Screenshot from 2026-03-08 14-08-19" src="https://github.com/user-attachments/assets/6faebb0d-4b51-4291-a26a-e7642395ecc8" />
+<img width="941" height="672" alt="lumora" src="https://github.com/user-attachments/assets/5cda111b-8d62-4d0f-b41e-e81dba0847a1" />
 
 ## ✨ Features
 
